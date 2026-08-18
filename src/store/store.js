@@ -1,10 +1,11 @@
 import { configureStore } from "@reduxjs/toolkit";
+import adminAuthReducer from "./slices/adminAuthSlice";
 
 // A new store is created per request so server-rendered pages never share state
 // between users. Register slice reducers here as you add them:
-//   import authReducer from "./slices/authSlice";
-//   reducer: { auth: authReducer }
 export const makeStore = () =>
   configureStore({
-    reducer: {},
+    reducer: {
+      adminAuth: adminAuthReducer,
+    },
   });
