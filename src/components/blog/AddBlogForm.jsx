@@ -192,7 +192,7 @@ export default function AddBlogForm({ initialBlog = null }) {
               value={formData.title}
               onChange={handleInputChange}
               placeholder="Enter blog title"
-              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 ${
+              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-black ${
                 fieldErrors.title ? "border-red-500" : "border-gray-300"
               }`}
               style={{ "--tw-ring-color": "var(--primary)" }}
@@ -213,7 +213,7 @@ export default function AddBlogForm({ initialBlog = null }) {
               onChange={handleInputChange}
               placeholder="Blog introduction/description"
               rows={4}
-              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 ${
+              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-black ${
                 fieldErrors.description ? "border-red-500" : "border-gray-300"
               }`}
               style={{ "--tw-ring-color": "var(--primary)" }}
@@ -282,7 +282,7 @@ export default function AddBlogForm({ initialBlog = null }) {
                 name="author"
                 value={formData.author}
                 onChange={handleInputChange}
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 ${
+                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-black ${
                   fieldErrors.author ? "border-red-500" : "border-gray-300"
                 }`}
                 style={{ "--tw-ring-color": "var(--primary)" }}
@@ -300,7 +300,7 @@ export default function AddBlogForm({ initialBlog = null }) {
                 name="publishedDate"
                 value={formData.publishedDate}
                 onChange={handleInputChange}
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 ${
+                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-black ${
                   fieldErrors.publishedDate ? "border-red-500" : "border-gray-300"
                 }`}
                 style={{ "--tw-ring-color": "var(--primary)" }}
@@ -322,7 +322,7 @@ export default function AddBlogForm({ initialBlog = null }) {
               onChange={handleInputChange}
               placeholder="Short bio about the author"
               rows={3}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-black"
               style={{ "--tw-ring-color": "var(--primary)" }}
             />
           </div>
@@ -363,7 +363,7 @@ export default function AddBlogForm({ initialBlog = null }) {
                     handleSectionChange(section.id, "heading", e.target.value)
                   }
                   placeholder="e.g., The Legacy of Panchalogam"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-black"
                   style={{ "--tw-ring-color": "var(--primary)" }}
                 />
               </div>

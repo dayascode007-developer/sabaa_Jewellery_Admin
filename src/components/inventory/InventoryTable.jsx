@@ -45,10 +45,10 @@ export default function InventoryTable({ inventoryItems }) {
                 Stock
               </th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
-                Status
+                Low stock Threshold
               </th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
-                Minimum stock
+                Status
               </th>
               <th className="px-6 py-4 text-center text-sm font-semibold text-gray-900">
                 Action
@@ -80,16 +80,16 @@ export default function InventoryTable({ inventoryItems }) {
                     </p>
                   </td>
                   <td className="px-6 py-4">
+                    <p className="text-sm font-semibold text-gray-900">
+                      {item.lowStockThreshold}
+                    </p>
+                  </td>
+                  <td className="px-6 py-4">
                     <span
                       className={`text-xs font-semibold px-3 py-1 rounded-full ${statusColor.bg} ${statusColor.text}`}
                     >
                       {statusColor.badge}
                     </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <p className="text-sm font-semibold text-gray-900">
-                      {item.lowStockThreshold}
-                    </p>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-center">

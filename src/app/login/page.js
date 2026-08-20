@@ -24,10 +24,12 @@ export default function LoginPage() {
 
     try {
       // Dispatch Redux login action with backend API call
-      const result = dispatch(loginAdmin({
-        email: email.trim().toLowerCase(),
-        password: password.trim()
-      }));
+      const result = dispatch(
+        loginAdmin({
+          email: email.trim().toLowerCase(),
+          password: password.trim(),
+        })
+      );
 
       // Handle the result
       result
@@ -45,7 +47,9 @@ export default function LoginPage() {
         });
     } catch (err) {
       console.error("❌ Login error:", err);
-      setError("An error occurred during login. Please check your credentials.");
+      setError(
+        "An error occurred during login. Please check your credentials."
+      );
       setLoading(false);
     }
   };
@@ -106,7 +110,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors text-black"
                 style={{ "--tw-ring-color": "var(--primary)" }}
                 required
               />
@@ -123,7 +127,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
-                  className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors"
+                  className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors text-black"
                   style={{ "--tw-ring-color": "var(--primary)" }}
                   required
                 />

@@ -120,11 +120,11 @@ export default function Inventory() {
             <input
               type="text"
               placeholder="Search by product name or SKU..."
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-black"
               style={{ "--tw-ring-color": "var(--primary)" }}
             />
           </div>
-          <select className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none">
+          <select className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none text-black">
             <option>All Categories</option>
             <option>Rings</option>
             <option>Earrings</option>
@@ -132,7 +132,7 @@ export default function Inventory() {
             <option>Bracelets</option>
             <option>Anklets</option>
           </select>
-          <select className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none">
+          <select className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none text-black">
             <option>All Status</option>
             <option>Critical</option>
             <option>Low</option>

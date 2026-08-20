@@ -6,11 +6,13 @@ import SuccessModal from "@/components/modals/SuccessModal";
 
 export default function UpdateStockModal({ isOpen, onClose, product }) {
   const [stock, setStock] = useState("");
+  const [lowStockThreshold, setLowStockThreshold] = useState("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   useEffect(() => {
     if (isOpen && product) {
       setStock(product.stock.toString());
+      setLowStockThreshold(product.lowStockThreshold?.toString() || "");
     }
   }, [isOpen, product]);
 
@@ -62,9 +64,22 @@ export default function UpdateStockModal({ isOpen, onClose, product }) {
               type="number"
               value={stock}
               onChange={(e) => setStock(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-black"
               style={{ "--tw-ring-color": "var(--primary)" }}
               required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-900 mb-2">
+              Low Stock Threshold
+            </label>
+            <input
+              type="number"
+              value={lowStockThreshold}
+              onChange={(e) => setLowStockThreshold(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-black"
+              style={{ "--tw-ring-color": "var(--primary)" }}
             />
           </div>
 
@@ -92,7 +107,7 @@ export default function UpdateStockModal({ isOpen, onClose, product }) {
         isOpen={showSuccessModal}
         onClose={handleSuccessClose}
         title="Stock updated successfully"
-        message={`Stock quantity has been updated to ${stock} units.`}
+        message={`Stock quantity has been updated to ${stock} units${lowStockThreshold ? ` and low stock threshold to ${lowStockThreshold}.` : "."}`}
         buttonText="Done"
       />
     </div>

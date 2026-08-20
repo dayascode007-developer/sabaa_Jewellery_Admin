@@ -58,7 +58,7 @@ export default function AddCategoryModal({ isOpen, onClose, category }) {
               value={categoryName}
               onChange={(e) => setCategoryName(e.target.value)}
               placeholder="Enter category name"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-black"
               style={{ "--tw-ring-color": "var(--primary)" }}
               required
             />

@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { MdFilterList, MdStar, MdEdit, MdDelete } from "react-icons/md";
+import { MdFilterList, MdEdit, MdDelete } from "react-icons/md";
 import DeleteConfirmModal from "./DeleteConfirmModal";
 import SuccessModal from "@/components/modals/SuccessModal";
 
@@ -141,7 +141,7 @@ export default function ProductsTable({ products }) {
               onChange={(e) =>
                 setFilters({ ...filters, category: e.target.value })
               }
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-black"
               style={{ "--tw-ring-color": "var(--primary)" }}
             >
               {categories.map((cat) => (
@@ -162,7 +162,7 @@ export default function ProductsTable({ products }) {
               onChange={(e) =>
                 setFilters({ ...filters, stockStatus: e.target.value })
               }
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-black"
               style={{ "--tw-ring-color": "var(--primary)" }}
             >
               {stockStatuses.map((status) => (
@@ -181,7 +181,7 @@ export default function ProductsTable({ products }) {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-black"
               style={{ "--tw-ring-color": "var(--primary)" }}
             >
               <option value="date">Date (Newest)</option>
@@ -205,7 +205,7 @@ export default function ProductsTable({ products }) {
               setSearchTerm(e.target.value);
               setCurrentPage(1);
             }}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-black"
             style={{ "--tw-ring-color": "var(--primary)" }}
           />
         </div>
@@ -222,7 +222,7 @@ export default function ProductsTable({ products }) {
           <button
             onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
             disabled={currentPage === 1}
-            className="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50"
+            className="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 text-black"
           >
             ←
           </button>
@@ -235,13 +235,13 @@ export default function ProductsTable({ products }) {
               const page = Math.min(Math.max(1, parseInt(e.target.value)), totalPages);
               setCurrentPage(page);
             }}
-            className="w-12 px-2 py-1 border border-gray-300 rounded text-center text-sm"
+            className="w-12 px-2 py-1 border border-gray-300 rounded text-center text-sm text-black"
           />
           <span className="text-sm text-gray-600">of {totalPages}</span>
           <button
             onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
             disabled={currentPage === totalPages}
-            className="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50"
+            className="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 text-black"
           >
             →
           </button>
@@ -269,13 +269,7 @@ export default function ProductsTable({ products }) {
                 Price
               </th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
-                Rating
-              </th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
                 Category
-              </th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
-                Tags
               </th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
                 Date
@@ -315,34 +309,7 @@ export default function ProductsTable({ products }) {
                   </div>
                 </td>
                 <td className="px-6 py-4">
-                  <div className="flex items-center gap-1">
-                    <div className="flex">
-                      {[...Array(5)].map((_, i) => (
-                        <MdStar
-                          key={i}
-                          size={16}
-                          className={i < Math.floor(product.rating) ? "text-yellow-400" : "text-gray-300"}
-                          fill={i < Math.floor(product.rating) ? "currentColor" : "none"}
-                        />
-                      ))}
-                    </div>
-                    <span className="text-xs text-gray-600">({product.rating})</span>
-                  </div>
-                </td>
-                <td className="px-6 py-4">
                   <p className="text-sm text-gray-600">{product.category}</p>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex flex-wrap gap-1">
-                    {product.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="inline-block px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
                 </td>
                 <td className="px-6 py-4">
                   <p className="text-sm text-gray-600">{product.date}</p>

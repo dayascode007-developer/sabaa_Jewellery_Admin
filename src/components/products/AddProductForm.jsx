@@ -3,6 +3,15 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { MdClose, MdCloudUpload } from "react-icons/md";
+import {
+  FaStar,
+  FaHeart,
+  FaLeaf,
+  FaMoon,
+  FaCircle,
+  FaSun,
+} from "react-icons/fa";
+import { MdLocalFlorist, MdDiamond } from "react-icons/md";
 import SuccessModal from "@/components/modals/SuccessModal";
 
 export default function AddProductForm({ productId = null }) {
@@ -10,6 +19,32 @@ export default function AddProductForm({ productId = null }) {
   const [isEditMode, setIsEditMode] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [activeTab, setActiveTab] = useState("general");
+  const fontOptions = [
+    { name: "Arial", cssFamily: "Arial, sans-serif" },
+    { name: "Serif", cssFamily: "serif" },
+    { name: "Sans-serif", cssFamily: "sans-serif" },
+    { name: "Monospace", cssFamily: "monospace" },
+    { name: "Georgia", cssFamily: "Georgia, serif" },
+    { name: "Trebuchet MS", cssFamily: "Trebuchet MS, sans-serif" },
+  ];
+  const colorOptions = [
+    { name: "Gold", hex: "#FFD700" },
+    { name: "Silver", hex: "#C0C0C0" },
+    { name: "Yellow Gold", hex: "#FFC700" },
+    { name: "Platinum", hex: "#E8E8E8" },
+  ];
+  const symbolOptions = [
+    { name: "Star", iconName: "FaStar", icon: FaStar },
+    { name: "Heart", iconName: "FaHeart", icon: FaHeart },
+    { name: "Om", iconName: "Om", text: "ॐ" },
+    { name: "Flower", iconName: "MdLocalFlorist", icon: MdLocalFlorist },
+    { name: "Leaf", iconName: "FaLeaf", icon: FaLeaf },
+    { name: "Moon", iconName: "FaMoon", icon: FaMoon },
+    { name: "Sun", iconName: "FaSun", icon: FaSun },
+    { name: "Diamond", iconName: "MdDiamond", icon: MdDiamond },
+    { name: "Circle", iconName: "FaCircle", icon: FaCircle },
+  ];
+
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -29,9 +64,9 @@ export default function AddProductForm({ productId = null }) {
     width: "",
     height: "",
     size: "",
-    font: "",
-    color: "",
-    symbol: "",
+    font: [],
+    color: [],
+    symbol: [],
     symbolDirection: "",
     productDetails: "",
     cleaningPolishing: "",
@@ -56,16 +91,28 @@ export default function AddProductForm({ productId = null }) {
       { id: 1, content: "Use viboothi powder with water drops to clean ring" },
     ],
     usageColorGuarantee: [
-      { id: 1, content: "Strictly use viboothy powder with water repeatedly for 5 minutes" },
+      {
+        id: 1,
+        content:
+          "Strictly use viboothy powder with water repeatedly for 5 minutes",
+      },
       { id: 2, content: "Occasional usage will reduce ring polish" },
     ],
     returnExchangePolicy: [
-      { id: 1, content: "Our return and exchange policy allows returns within 30 days of purchase for unused items." },
+      {
+        id: 1,
+        content:
+          "Our return and exchange policy allows returns within 30 days of purchase for unused items.",
+      },
       { id: 2, content: "Please contact us for exchange requests." },
     ],
     addressContact: [
       { id: 1, content: "Our Store located in Tamilnadu & Kerala" },
-      { id: 2, content: "Head Office: Sabaa Jewel arts, 54, Gandhi nagar, vilvanagar, semmandalam, cuddalore 607001" },
+      {
+        id: 2,
+        content:
+          "Head Office: Sabaa Jewel arts, 54, Gandhi nagar, vilvanagar, semmandalam, cuddalore 607001",
+      },
       { id: 3, content: "Contact Mobile: +91 7871900140" },
     ],
   });
@@ -107,6 +154,35 @@ export default function AddProductForm({ productId = null }) {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleCheckboxChange = (fieldName, option) => {
+    setFormData((prev) => {
+      const currentArray = prev[fieldName] || [];
+
+      // Check if option is already selected (for objects with name property)
+      const isSelected = currentArray.some((item) => {
+        if (typeof item === "object" && typeof option === "object") {
+          return item.name === option.name;
+        }
+        return item === option;
+      });
+
+      // Add or remove option
+      const updatedArray = isSelected
+        ? currentArray.filter((item) => {
+            if (typeof item === "object" && typeof option === "object") {
+              return item.name !== option.name;
+            }
+            return item !== option;
+          })
+        : [...currentArray, option];
+
+      return {
+        ...prev,
+        [fieldName]: updatedArray,
+      };
+    });
   };
 
   const handleMainImageUpload = (e) => {
@@ -155,7 +231,10 @@ export default function AddProductForm({ productId = null }) {
     }
   };
 
-  const handleNext = () => {
+  const handleNext = (e) => {
+    if (e) {
+      e.preventDefault();
+    }
     const tabOrder = [
       "general",
       "inventory",
@@ -183,9 +262,30 @@ export default function AddProductForm({ productId = null }) {
     }
   };
 
+  const prepareDataForStorage = () => {
+    // Convert objects to storable format (removing icon components)
+    return {
+      ...formData,
+      font: formData.font.map((f) =>
+        typeof f === "object" ? { name: f.name, cssFamily: f.cssFamily } : f
+      ),
+      color: formData.color.map((c) =>
+        typeof c === "object" ? { name: c.name, hex: c.hex } : c
+      ),
+      symbol: formData.symbol.map((s) =>
+        typeof s === "object" ? { name: s.name, iconName: s.iconName } : s
+      ),
+    };
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    setShowSuccessModal(true);
+    // Only show success modal when actually submitting (on details tab)
+    if (activeTab === "details") {
+      const storageData = prepareDataForStorage();
+      console.log("Data to store in DB:", storageData);
+      setShowSuccessModal(true);
+    }
   };
 
   const handleSuccessModalClose = () => {
@@ -205,7 +305,9 @@ export default function AddProductForm({ productId = null }) {
           {isEditMode ? "Edit Product" : "Add Product"}
         </h1>
         <p className="text-gray-600 mt-1">
-          {isEditMode ? "Update product details" : "Create a new product with images and details"}
+          {isEditMode
+            ? "Update product details"
+            : "Create a new product with images and details"}
         </p>
       </div>
 
@@ -255,7 +357,7 @@ export default function AddProductForm({ productId = null }) {
                   value={formData.title}
                   onChange={handleInputChange}
                   placeholder="Enter product title"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-black"
                   style={{ "--tw-ring-color": "var(--primary)" }}
                   required
                 />
@@ -271,7 +373,7 @@ export default function AddProductForm({ productId = null }) {
                   onChange={handleInputChange}
                   placeholder="Enter product description"
                   rows={4}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-black"
                   style={{ "--tw-ring-color": "var(--primary)" }}
                   required
                 />
@@ -289,7 +391,7 @@ export default function AddProductForm({ productId = null }) {
                     onChange={handleInputChange}
                     placeholder="0.00"
                     step="0.01"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-black"
                     style={{ "--tw-ring-color": "var(--primary)" }}
                     required
                   />
@@ -305,7 +407,7 @@ export default function AddProductForm({ productId = null }) {
                     onChange={handleInputChange}
                     placeholder="0.00"
                     step="0.01"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-black"
                     style={{ "--tw-ring-color": "var(--primary)" }}
                   />
                 </div>
@@ -319,7 +421,7 @@ export default function AddProductForm({ productId = null }) {
                   name="category"
                   value={formData.category}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-black"
                   style={{ "--tw-ring-color": "var(--primary)" }}
                   required
                 >
@@ -339,7 +441,7 @@ export default function AddProductForm({ productId = null }) {
                     Tax status <span className="text-red-500">*</span>
                   </label>
                   <select
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-black"
                     style={{ "--tw-ring-color": "var(--primary)" }}
                   >
                     <option value="taxable">Taxable</option>
@@ -352,7 +454,7 @@ export default function AddProductForm({ productId = null }) {
                     Tax class <span className="text-red-500">*</span>
                   </label>
                   <select
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-black"
                     style={{ "--tw-ring-color": "var(--primary)" }}
                   >
                     <option value="standard">Standard</option>
@@ -395,7 +497,7 @@ export default function AddProductForm({ productId = null }) {
                     style={{ backgroundColor: "var(--primary)" }}
                     className="px-4 py-2 text-white font-medium rounded-lg hover:opacity-90 transition-opacity text-sm"
                   >
-                    + Add img
+                    + Add image
                   </button>
                 </div>
 
@@ -506,7 +608,7 @@ export default function AddProductForm({ productId = null }) {
                   value={formData.sku}
                   onChange={handleInputChange}
                   placeholder="e.g., SKU-001"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-black"
                   style={{ "--tw-ring-color": "var(--primary)" }}
                   required
                 />
@@ -582,7 +684,7 @@ export default function AddProductForm({ productId = null }) {
                       value={formData.quantity}
                       onChange={handleInputChange}
                       placeholder="0"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-black"
                       style={{ "--tw-ring-color": "var(--primary)" }}
                       required
                     />
@@ -640,7 +742,7 @@ export default function AddProductForm({ productId = null }) {
                       value={formData.minStock}
                       onChange={handleInputChange}
                       placeholder="e.g., 5"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-black"
                       style={{ "--tw-ring-color": "var(--primary)" }}
                     />
                   </div>
@@ -685,7 +787,7 @@ export default function AddProductForm({ productId = null }) {
                   value={formData.weight}
                   onChange={handleInputChange}
                   placeholder="0"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-black"
                   style={{ "--tw-ring-color": "var(--primary)" }}
                 />
               </div>
@@ -702,7 +804,7 @@ export default function AddProductForm({ productId = null }) {
                       value={formData.length}
                       onChange={handleInputChange}
                       placeholder="Length"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-sm"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-sm text-black"
                       style={{ "--tw-ring-color": "var(--primary)" }}
                     />
                   </div>
@@ -713,7 +815,7 @@ export default function AddProductForm({ productId = null }) {
                       value={formData.width}
                       onChange={handleInputChange}
                       placeholder="Width"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-sm"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-sm text-black"
                       style={{ "--tw-ring-color": "var(--primary)" }}
                     />
                   </div>
@@ -724,7 +826,7 @@ export default function AddProductForm({ productId = null }) {
                       value={formData.height}
                       onChange={handleInputChange}
                       placeholder="Height"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-sm"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-sm text-black"
                       style={{ "--tw-ring-color": "var(--primary)" }}
                     />
                   </div>
@@ -742,14 +844,34 @@ export default function AddProductForm({ productId = null }) {
                 <label className="block text-sm font-medium text-gray-900 mb-2">
                   Ring Size
                 </label>
-                <div className="border border-gray-300 rounded-lg p-3 space-y-2">
-                  <div className="flex flex-wrap gap-2 min-h-10">
+                <select
+                  value=""
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      addRingSizeSlot(e.target.value);
+                      e.target.value = "";
+                    }
+                  }}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-black"
+                  style={{ "--tw-ring-color": "var(--primary)" }}
+                >
+                  <option value="">Select a ring size</option>
+                  {[10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32].map(
+                    (size) => (
+                      <option key={size} value={size}>
+                        {size}
+                      </option>
+                    )
+                  )}
+                </select>
+                {ringSizes.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-3">
                     {ringSizes
                       .filter((sizeSlot) => sizeSlot.size)
                       .map((sizeSlot) => (
                         <span
                           key={sizeSlot.id}
-                          className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 rounded text-sm font-medium"
+                          className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 rounded text-sm font-medium text-black"
                         >
                           {sizeSlot.size}
                           <button
@@ -762,81 +884,119 @@ export default function AddProductForm({ productId = null }) {
                         </span>
                       ))}
                   </div>
-                  <div className="flex gap-2">
-                    <input
-                      type="number"
-                      id="ringSizeInput"
-                      placeholder="e.g., 10"
-                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-sm"
-                      style={{ "--tw-ring-color": "var(--primary)" }}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && e.target.value) {
-                          addRingSizeSlot(e.target.value);
-                          e.target.value = "";
-                        }
-                      }}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const input = document.getElementById("ringSizeInput");
-                        if (input && input.value) {
-                          addRingSizeSlot(input.value);
-                          input.value = "";
-                        }
-                      }}
-                      style={{ backgroundColor: "var(--primary)" }}
-                      className="px-4 py-2 text-white font-medium rounded-lg hover:opacity-90 transition-opacity text-sm whitespace-nowrap"
-                    >
-                      + Add Size
-                    </button>
-                  </div>
-                </div>
+                )}
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-900 mb-2">
                   Font
                 </label>
-                <input
-                  type="text"
-                  name="font"
-                  value={formData.font}
-                  onChange={handleInputChange}
-                  placeholder="e.g., Arial, Serif"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50"
-                  style={{ "--tw-ring-color": "var(--primary)" }}
-                />
+                <div className="grid grid-cols-2 gap-x-4 gap-y-1 mb-2 w-fit">
+                  {fontOptions.map((option) => (
+                    <label
+                      key={option.name}
+                      className="flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={formData.font.some((f) =>
+                          typeof f === "object"
+                            ? f.name === option.name
+                            : f === option.name
+                        )}
+                        onChange={() => handleCheckboxChange("font", option)}
+                        className="w-4 h-4 rounded border-gray-300 cursor-pointer shrink-0"
+                        style={{ accentColor: "var(--primary)" }}
+                      />
+                      <span
+                        className="text-sm whitespace-nowrap"
+                        style={{
+                          fontFamily: option.cssFamily,
+                          color: "#374151",
+                        }}
+                      >
+                        {option.name}
+                      </span>
+                    </label>
+                  ))}
+                </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-900 mb-2">
-                  Color
+                  Enamel color
                 </label>
-                <input
-                  type="text"
-                  name="color"
-                  value={formData.color}
-                  onChange={handleInputChange}
-                  placeholder="e.g., Gold, Silver, Red"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50"
-                  style={{ "--tw-ring-color": "var(--primary)" }}
-                />
+                <div className="grid grid-cols-3 gap-x-4 gap-y-1 mb-2 w-fit">
+                  {colorOptions.map((option) => (
+                    <label
+                      key={option.name}
+                      className="flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={formData.color.some((c) =>
+                          typeof c === "object"
+                            ? c.name === option.name
+                            : c === option.name
+                        )}
+                        onChange={() => handleCheckboxChange("color", option)}
+                        className="w-4 h-4 rounded border-gray-300 cursor-pointer shrink-0"
+                        style={{ accentColor: "var(--primary)" }}
+                      />
+                      <span
+                        className="inline-block w-4 h-4 rounded-full shrink-0 border border-gray-300"
+                        style={{ backgroundColor: option.hex }}
+                        title={option.hex}
+                      />
+                      <span className="text-sm text-gray-700 whitespace-nowrap">
+                        {option.name}
+                      </span>
+                    </label>
+                  ))}
+                </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-900 mb-2">
                   Symbol
                 </label>
-                <input
-                  type="text"
-                  name="symbol"
-                  value={formData.symbol}
-                  onChange={handleInputChange}
-                  placeholder="e.g., Star, Heart, Om"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50"
-                  style={{ "--tw-ring-color": "var(--primary)" }}
-                />
+                <div className="grid grid-cols-3 gap-x-4 gap-y-1 mb-2 w-fit">
+                  {symbolOptions.map((option) => {
+                    const IconComponent = option.icon;
+                    return (
+                      <label
+                        key={option.name}
+                        className="flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={formData.symbol.some((s) =>
+                            typeof s === "object"
+                              ? s.name === option.name
+                              : s === option.name
+                          )}
+                          onChange={() =>
+                            handleCheckboxChange("symbol", option)
+                          }
+                          className="w-4 h-4 rounded border-gray-300 cursor-pointer shrink-0"
+                          style={{ accentColor: "var(--primary)" }}
+                        />
+                        <span className="text-lg shrink-0">
+                          {IconComponent ? (
+                            <IconComponent size={16} />
+                          ) : (
+                            <span style={{ fontSize: "16px" }}>
+                              {option.text}
+                            </span>
+                          )}
+                        </span>
+                        <span className="text-sm text-gray-700 whitespace-nowrap">
+                          {option.name}
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
               </div>
 
               <div>
@@ -853,16 +1013,6 @@ export default function AddProductForm({ productId = null }) {
                       onChange={handleInputChange}
                     />
                     <span className="text-sm text-gray-700">Left</span>
-                  </label>
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="radio"
-                      name="symbolDirection"
-                      value="center"
-                      checked={formData.symbolDirection === "center"}
-                      onChange={handleInputChange}
-                    />
-                    <span className="text-sm text-gray-700">Center</span>
                   </label>
                   <label className="flex items-center gap-2">
                     <input
@@ -890,18 +1040,22 @@ export default function AddProductForm({ productId = null }) {
                   Product Details
                 </label>
                 <textarea
-                  value={detailsSections.productDetails.map((item) => item.content).join("\n")}
+                  value={detailsSections.productDetails
+                    .map((item) => item.content)
+                    .join("\n")}
                   onChange={(e) =>
                     setDetailsSections((prev) => ({
                       ...prev,
-                      productDetails: e.target.value.split("\n").map((content, idx) => ({
-                        id: prev.productDetails[idx]?.id || idx + 1,
-                        content,
-                      })),
+                      productDetails: e.target.value
+                        .split("\n")
+                        .map((content, idx) => ({
+                          id: prev.productDetails[idx]?.id || idx + 1,
+                          content,
+                        })),
                     }))
                   }
                   rows={5}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-sm"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-sm text-black"
                   style={{ "--tw-ring-color": "var(--primary)" }}
                 />
               </div>
@@ -912,18 +1066,22 @@ export default function AddProductForm({ productId = null }) {
                   Cleaning & Polishing
                 </label>
                 <textarea
-                  value={detailsSections.cleaningPolishing.map((item) => item.content).join("\n")}
+                  value={detailsSections.cleaningPolishing
+                    .map((item) => item.content)
+                    .join("\n")}
                   onChange={(e) =>
                     setDetailsSections((prev) => ({
                       ...prev,
-                      cleaningPolishing: e.target.value.split("\n").map((content, idx) => ({
-                        id: prev.cleaningPolishing[idx]?.id || idx + 1,
-                        content,
-                      })),
+                      cleaningPolishing: e.target.value
+                        .split("\n")
+                        .map((content, idx) => ({
+                          id: prev.cleaningPolishing[idx]?.id || idx + 1,
+                          content,
+                        })),
                     }))
                   }
                   rows={5}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-sm"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-sm text-black"
                   style={{ "--tw-ring-color": "var(--primary)" }}
                 />
               </div>
@@ -934,18 +1092,22 @@ export default function AddProductForm({ productId = null }) {
                   Usage & Color Guarantee
                 </label>
                 <textarea
-                  value={detailsSections.usageColorGuarantee.map((item) => item.content).join("\n")}
+                  value={detailsSections.usageColorGuarantee
+                    .map((item) => item.content)
+                    .join("\n")}
                   onChange={(e) =>
                     setDetailsSections((prev) => ({
                       ...prev,
-                      usageColorGuarantee: e.target.value.split("\n").map((content, idx) => ({
-                        id: prev.usageColorGuarantee[idx]?.id || idx + 1,
-                        content,
-                      })),
+                      usageColorGuarantee: e.target.value
+                        .split("\n")
+                        .map((content, idx) => ({
+                          id: prev.usageColorGuarantee[idx]?.id || idx + 1,
+                          content,
+                        })),
                     }))
                   }
                   rows={5}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-sm"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-sm text-black"
                   style={{ "--tw-ring-color": "var(--primary)" }}
                 />
               </div>
@@ -956,18 +1118,22 @@ export default function AddProductForm({ productId = null }) {
                   Return & Exchange Policy
                 </label>
                 <textarea
-                  value={detailsSections.returnExchangePolicy.map((item) => item.content).join("\n")}
+                  value={detailsSections.returnExchangePolicy
+                    .map((item) => item.content)
+                    .join("\n")}
                   onChange={(e) =>
                     setDetailsSections((prev) => ({
                       ...prev,
-                      returnExchangePolicy: e.target.value.split("\n").map((content, idx) => ({
-                        id: prev.returnExchangePolicy[idx]?.id || idx + 1,
-                        content,
-                      })),
+                      returnExchangePolicy: e.target.value
+                        .split("\n")
+                        .map((content, idx) => ({
+                          id: prev.returnExchangePolicy[idx]?.id || idx + 1,
+                          content,
+                        })),
                     }))
                   }
                   rows={5}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-sm"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-sm text-black"
                   style={{ "--tw-ring-color": "var(--primary)" }}
                 />
               </div>
@@ -978,18 +1144,22 @@ export default function AddProductForm({ productId = null }) {
                   Our Address & Contact
                 </label>
                 <textarea
-                  value={detailsSections.addressContact.map((item) => item.content).join("\n")}
+                  value={detailsSections.addressContact
+                    .map((item) => item.content)
+                    .join("\n")}
                   onChange={(e) =>
                     setDetailsSections((prev) => ({
                       ...prev,
-                      addressContact: e.target.value.split("\n").map((content, idx) => ({
-                        id: prev.addressContact[idx]?.id || idx + 1,
-                        content,
-                      })),
+                      addressContact: e.target.value
+                        .split("\n")
+                        .map((content, idx) => ({
+                          id: prev.addressContact[idx]?.id || idx + 1,
+                          content,
+                        })),
                     }))
                   }
                   rows={5}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-sm"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-sm text-black"
                   style={{ "--tw-ring-color": "var(--primary)" }}
                 />
               </div>
@@ -1011,9 +1181,13 @@ export default function AddProductForm({ productId = null }) {
           {activeTab !== "details" ? (
             <button
               type="button"
-              onClick={handleNext}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleNext();
+              }}
               style={{ backgroundColor: "var(--primary)" }}
-              className="px-6 py-2 text-white font-medium rounded-lg hover:opacity-90 transition-opacity"
+              className="px-6 py-2 text-white font-medium rounded-lg hover:opacity-90 transition-opacity cursor-pointer"
             >
               Next
             </button>
@@ -1021,7 +1195,7 @@ export default function AddProductForm({ productId = null }) {
             <button
               type="submit"
               style={{ backgroundColor: "var(--primary)" }}
-              className="px-6 py-2 text-white font-medium rounded-lg hover:opacity-90 transition-opacity"
+              className="px-6 py-2 text-white font-medium rounded-lg hover:opacity-90 transition-opacity cursor-pointer"
             >
               {isEditMode ? "Update Product" : "Publish Product"}
             </button>
@@ -1033,7 +1207,11 @@ export default function AddProductForm({ productId = null }) {
       <SuccessModal
         isOpen={showSuccessModal}
         onClose={handleSuccessModalClose}
-        title={isEditMode ? "Product updated successfully" : "Product created successfully"}
+        title={
+          isEditMode
+            ? "Product updated successfully"
+            : "Product created successfully"
+        }
         message={
           isEditMode
             ? "Your product changes have been saved and updated."
