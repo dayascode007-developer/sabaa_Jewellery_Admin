@@ -17,12 +17,14 @@ import { BsHandbag } from "react-icons/bs";
 import { IoPeopleOutline, IoSettingsOutline } from "react-icons/io5";
 import { FiFileText } from "react-icons/fi";
 import { GrSearchAdvanced } from "react-icons/gr";
+import { CiImageOn } from "react-icons/ci";
 
 const iconMap = {
   dashboard: RxDashboard,
   products: MdOutlineCategory,
   orders: BsHandbag,
   customers: IoPeopleOutline,
+  banners: CiImageOn,
   inventory: MdOutlineInventory2,
   coupons: MdOutlineLocalOffer,
   reviews: FaRegStar,

@@ -25,6 +25,11 @@ export const navigationItems = [
     icon: "customers",
   },
   {
+    name: "Banners",
+    href: "/banners",
+    icon: "banners",
+  },
+  {
     name: "Inventory",
     href: "/inventory",
     icon: "inventory",

@@ -4,15 +4,17 @@ import { useState, useEffect } from "react";
 import { MdClose } from "react-icons/md";
 import SuccessModal from "@/components/modals/SuccessModal";
 
-export default function UpdateStockModal({ isOpen, onClose, product }) {
-  const [stock, setStock] = useState("");
+export default function AddCategoryModal({ isOpen, onClose, category }) {
+  const [categoryName, setCategoryName] = useState("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   useEffect(() => {
-    if (isOpen && product) {
-      setStock(product.stock.toString());
+    if (isOpen && category) {
+      setCategoryName(category.name);
+    } else if (isOpen) {
+      setCategoryName("");
     }
-  }, [isOpen, product]);
+  }, [isOpen, category]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -34,7 +36,9 @@ export default function UpdateStockModal({ isOpen, onClose, product }) {
       <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">Edit Stock</h2>
+          <h2 className="text-xl font-semibold text-gray-900">
+            {category ? "Edit Category" : "Add Category"}
+          </h2>
           <button
             onClick={onClose}
             className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
@@ -43,25 +47,17 @@ export default function UpdateStockModal({ isOpen, onClose, product }) {
           </button>
         </div>
 
-        {/* Product Info */}
-        <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-          <p className="text-sm text-gray-600">Product</p>
-          <p className="text-lg font-semibold text-gray-900">
-            {product?.product}
-          </p>
-          <p className="text-sm text-gray-600 mt-2">SKU: {product?.sku}</p>
-        </div>
-
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-900 mb-2">
-              Stock Quantity
+              Category Name <span className="text-red-500">*</span>
             </label>
             <input
-              type="number"
-              value={stock}
-              onChange={(e) => setStock(e.target.value)}
+              type="text"
+              value={categoryName}
+              onChange={(e) => setCategoryName(e.target.value)}
+              placeholder="Enter category name"
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50"
               style={{ "--tw-ring-color": "var(--primary)" }}
               required
@@ -81,7 +77,7 @@ export default function UpdateStockModal({ isOpen, onClose, product }) {
               style={{ backgroundColor: "var(--primary)" }}
               className="flex-1 px-4 py-2 text-white font-medium rounded-lg hover:opacity-90 transition-opacity"
             >
-              Save
+              {category ? "Update" : "Add"}
             </button>
           </div>
         </form>
@@ -91,8 +87,12 @@ export default function UpdateStockModal({ isOpen, onClose, product }) {
       <SuccessModal
         isOpen={showSuccessModal}
         onClose={handleSuccessClose}
-        title="Stock updated successfully"
-        message={`Stock quantity has been updated to ${stock} units.`}
+        title={category ? "Category updated successfully" : "Category added successfully"}
+        message={
+          category
+            ? `${categoryName} has been updated.`
+            : `${categoryName} has been added to categories.`
+        }
         buttonText="Done"
       />
     </div>

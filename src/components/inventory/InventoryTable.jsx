@@ -15,12 +15,12 @@ export default function InventoryTable({ inventoryItems }) {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case "critical":
-        return { bg: "bg-red-50", text: "text-red-600", badge: "Critical" };
       case "low":
         return { bg: "bg-yellow-50", text: "text-yellow-600", badge: "Low" };
-      case "good":
-        return { bg: "bg-green-50", text: "text-green-600", badge: "In Stock" };
+      case "in-stock":
+        return { bg: "bg-green-50", text: "text-green-600", badge: "In stock" };
+      case "out-of-stock":
+        return { bg: "bg-red-50", text: "text-red-600", badge: "Out of stock" };
       default:
         return { bg: "bg-gray-50", text: "text-gray-600", badge: "Unknown" };
     }
@@ -46,6 +46,9 @@ export default function InventoryTable({ inventoryItems }) {
               </th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
                 Status
+              </th>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
+                Minimum stock
               </th>
               <th className="px-6 py-4 text-center text-sm font-semibold text-gray-900">
                 Action
@@ -84,6 +87,11 @@ export default function InventoryTable({ inventoryItems }) {
                     </span>
                   </td>
                   <td className="px-6 py-4">
+                    <p className="text-sm font-semibold text-gray-900">
+                      {item.lowStockThreshold}
+                    </p>
+                  </td>
+                  <td className="px-6 py-4">
                     <div className="flex items-center justify-center">
                       <button
                         onClick={() => handleEditClick(item)}
@@ -92,7 +100,9 @@ export default function InventoryTable({ inventoryItems }) {
                         title="Edit stock"
                       >
                         <MdEdit size={18} />
-                        <span className="text-sm font-medium">Update Stock</span>
+                        <span className="text-sm font-medium">
+                          Update Stock
+                        </span>
                       </button>
                     </div>
                   </td>
