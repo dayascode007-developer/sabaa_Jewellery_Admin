@@ -21,9 +21,7 @@ export default function AddBlogForm({ initialBlog = null }) {
   const [formData, setFormData] = useState({
     title: initialBlog?.title || "",
     description: initialBlog?.description || "",
-    author: initialBlog?.author || "Aakash Kumar",
     publishedDate: initialBlog?.publishedDate || new Date().toISOString().split("T")[0],
-    authorBio: initialBlog?.authorBio || "",
   });
 
   const [mainImage, setMainImage] = useState(initialBlog?.mainImage || null);
@@ -119,9 +117,6 @@ export default function AddBlogForm({ initialBlog = null }) {
     }
     if (!mainImage) {
       errors.mainImage = "Main image is required";
-    }
-    if (!formData.author.trim()) {
-      errors.author = "Author name is required";
     }
     if (!formData.publishedDate) {
       errors.publishedDate = "Published date is required";
@@ -271,61 +266,26 @@ export default function AddBlogForm({ initialBlog = null }) {
             )}
           </div>
 
-          {/* Author & Date */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-900 mb-2">
-                Author <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                name="author"
-                value={formData.author}
-                onChange={handleInputChange}
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-black ${
-                  fieldErrors.author ? "border-red-500" : "border-gray-300"
-                }`}
-                style={{ "--tw-ring-color": "var(--primary)" }}
-              />
-              {fieldErrors.author && (
-                <p className="text-red-500 text-sm mt-1">{fieldErrors.author}</p>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-900 mb-2">
-                Published Date <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="date"
-                name="publishedDate"
-                value={formData.publishedDate}
-                onChange={handleInputChange}
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-black ${
-                  fieldErrors.publishedDate ? "border-red-500" : "border-gray-300"
-                }`}
-                style={{ "--tw-ring-color": "var(--primary)" }}
-              />
-              {fieldErrors.publishedDate && (
-                <p className="text-red-500 text-sm mt-1">{fieldErrors.publishedDate}</p>
-              )}
-            </div>
-          </div>
-
-          {/* Author Bio */}
+          {/* Published Date */}
           <div>
             <label className="block text-sm font-medium text-gray-900 mb-2">
-              Author Bio
+              Published Date <span className="text-red-500">*</span>
             </label>
-            <textarea
-              name="authorBio"
-              value={formData.authorBio}
+            <input
+              type="date"
+              name="publishedDate"
+              value={formData.publishedDate}
               onChange={handleInputChange}
-              placeholder="Short bio about the author"
-              rows={3}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-black"
+              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-black ${
+                fieldErrors.publishedDate ? "border-red-500" : "border-gray-300"
+              }`}
               style={{ "--tw-ring-color": "var(--primary)" }}
             />
+            {fieldErrors.publishedDate && (
+              <p className="text-red-500 text-sm mt-1">{fieldErrors.publishedDate}</p>
+            )}
           </div>
+
         </div>
 
         {/* Content Sections */}

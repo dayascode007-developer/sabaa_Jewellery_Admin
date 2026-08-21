@@ -57,7 +57,6 @@ export default function AddProductForm({ productId = null }) {
     minStock: 0,
     trackStock: false,
     stockStatus: "in-stock",
-    allowBackorders: "not-allow",
     limitPurchases: false,
     enableReviews: true,
     weight: "",
@@ -706,47 +705,6 @@ export default function AddProductForm({ productId = null }) {
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-900 mb-3">
-                      Allow backorders?
-                    </label>
-                    <div className="space-y-2">
-                      <label className="flex items-center gap-2">
-                        <input
-                          type="radio"
-                          name="allowBackorders"
-                          value="not-allow"
-                          checked={formData.allowBackorders === "not-allow"}
-                          onChange={handleInputChange}
-                        />
-                        <span className="text-sm text-gray-700">
-                          Do not allow
-                        </span>
-                      </label>
-                      <label className="flex items-center gap-2">
-                        <input
-                          type="radio"
-                          name="allowBackorders"
-                          value="notify"
-                          checked={formData.allowBackorders === "notify"}
-                          onChange={handleInputChange}
-                        />
-                        <span className="text-sm text-gray-700">
-                          Allow, but notify customer
-                        </span>
-                      </label>
-                      <label className="flex items-center gap-2">
-                        <input
-                          type="radio"
-                          name="allowBackorders"
-                          value="allow"
-                          checked={formData.allowBackorders === "allow"}
-                          onChange={handleInputChange}
-                        />
-                        <span className="text-sm text-gray-700">Allow</span>
-                      </label>
-                    </div>
-                  </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-900 mb-2">
@@ -860,47 +818,65 @@ export default function AddProductForm({ productId = null }) {
                 <label className="block text-sm font-medium text-gray-900 mb-2">
                   Ring Size
                 </label>
-                <select
-                  value=""
-                  onChange={(e) => {
-                    if (e.target.value) {
-                      addRingSizeSlot(e.target.value);
-                      e.target.value = "";
+                <label className="flex items-center gap-1.5 cursor-pointer w-fit mb-2">
+                  <input
+                    type="checkbox"
+                    checked={
+                      ringSizes.filter((slot) => slot.size).length === 12
                     }
-                  }}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-black"
-                  style={{ "--tw-ring-color": "var(--primary)" }}
-                >
-                  <option value="">Select a ring size</option>
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        [10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32].forEach(
+                          (size) => {
+                            if (!ringSizes.some((slot) => slot.size === size)) {
+                              addRingSizeSlot(size);
+                            }
+                          }
+                        );
+                      } else {
+                        setRingSizes([{ id: 1, size: "" }]);
+                        setNextSizeId(2);
+                      }
+                    }}
+                    className="w-4 h-4 rounded border-gray-300 cursor-pointer shrink-0"
+                    style={{ accentColor: "var(--primary)" }}
+                  />
+                  <span className="text-sm font-semibold text-gray-900">
+                    All
+                  </span>
+                </label>
+                <div className="grid grid-cols-4 gap-x-4 gap-y-2 mb-2 w-fit">
                   {[10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32].map(
                     (size) => (
-                      <option key={size} value={size}>
-                        {size}
-                      </option>
+                      <label
+                        key={size}
+                        className="flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={ringSizes.some((slot) => slot.size === size)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              addRingSizeSlot(size);
+                            } else {
+                              const sizeSlot = ringSizes.find(
+                                (slot) => slot.size === size
+                              );
+                              if (sizeSlot) {
+                                removeRingSizeSlot(sizeSlot.id);
+                              }
+                            }
+                          }}
+                          className="w-4 h-4 rounded border-gray-300 cursor-pointer shrink-0"
+                          style={{ accentColor: "var(--primary)" }}
+                        />
+                        <span className="text-sm text-gray-700 whitespace-nowrap">
+                          {size}
+                        </span>
+                      </label>
                     )
                   )}
-                </select>
-                {ringSizes.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-3">
-                    {ringSizes
-                      .filter((sizeSlot) => sizeSlot.size)
-                      .map((sizeSlot) => (
-                        <span
-                          key={sizeSlot.id}
-                          className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 rounded text-sm font-medium text-black"
-                        >
-                          {sizeSlot.size}
-                          <button
-                            type="button"
-                            onClick={() => removeRingSizeSlot(sizeSlot.id)}
-                            className="text-gray-500 hover:text-red-600 transition-colors"
-                          >
-                            ✕
-                          </button>
-                        </span>
-                      ))}
-                  </div>
-                )}
+                </div>
               </div>
 
               <div>
@@ -1039,6 +1015,16 @@ export default function AddProductForm({ productId = null }) {
                       onChange={handleInputChange}
                     />
                     <span className="text-sm text-gray-700">Right</span>
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="symbolDirection"
+                      value="center"
+                      checked={formData.symbolDirection === "center"}
+                      onChange={handleInputChange}
+                    />
+                    <span className="text-sm text-gray-700">Center</span>
                   </label>
                 </div>
               </div>

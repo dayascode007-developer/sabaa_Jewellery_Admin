@@ -58,8 +58,6 @@ export default function BlogDisplay({ blog, onEdit, onDelete, onBack }) {
 
         {/* Meta Information */}
         <div className="flex items-center gap-4 text-gray-600 mb-8 pb-6 border-b border-gray-200">
-          <span className="text-sm">{blog.author}</span>
-          <span className="text-sm">•</span>
           <span className="text-sm">{blog.publishedDate}</span>
         </div>
 
@@ -121,13 +119,6 @@ export default function BlogDisplay({ blog, onEdit, onDelete, onBack }) {
           ))}
         </div>
 
-        {/* Author Info */}
-        <div className="mt-12 p-6 bg-gray-100 rounded-lg">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            About the Author
-          </h3>
-          <p className="text-gray-700">{blog.authorBio}</p>
-        </div>
       </div>
 
       {/* Delete Confirmation Modal */}

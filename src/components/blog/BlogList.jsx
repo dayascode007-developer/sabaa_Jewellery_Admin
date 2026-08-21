@@ -97,8 +97,6 @@ export default function BlogList({ blogs }) {
 
               {/* Meta */}
               <div className="flex items-center gap-2 text-xs text-gray-500">
-                <span>{blog.author}</span>
-                <span>•</span>
                 <span>{blog.publishedDate}</span>
               </div>
 
