@@ -1,24 +1,32 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { MdClose, MdCloudUpload } from "react-icons/md";
+import { createBanner, updateBanner } from "@/store/slices/bannersSlice";
 
 export default function BannerModal({ banner, onSave, onClose }) {
-  const [bannerImage, setBannerImage] = useState(null);
+  const dispatch = useDispatch();
+  const { loading } = useSelector((state) => state.banners);
+  const { token } = useSelector((state) => state.adminAuth);
+
+  const [bannerFile, setBannerFile] = useState(null);
+  const [bannerPreview, setBannerPreview] = useState(null);
   const [fieldErrors, setFieldErrors] = useState({});
 
   useEffect(() => {
     if (banner) {
-      setBannerImage(banner.image);
+      setBannerPreview(banner.image_url);
     }
   }, [banner]);
 
   const handleImageUpload = (e) => {
     const file = e.target.files?.[0];
     if (file) {
+      setBannerFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
-        setBannerImage(reader.result);
+        setBannerPreview(reader.result);
         if (fieldErrors.image) {
           setFieldErrors((prev) => {
             const updated = { ...prev };
@@ -33,13 +41,13 @@ export default function BannerModal({ banner, onSave, onClose }) {
 
   const validateForm = () => {
     const errors = {};
-    if (!bannerImage) {
+    if (!bannerFile && !banner) {
       errors.image = "Banner image is required";
     }
     return errors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const errors = validateForm();
     if (Object.keys(errors).length > 0) {
@@ -47,13 +55,18 @@ export default function BannerModal({ banner, onSave, onClose }) {
       return;
     }
 
-    onSave({
-      title: banner?.title || "Banner",
-      description: banner?.description || "",
-      position: banner?.position || 1,
-      isActive: banner?.isActive !== false,
-      image: bannerImage,
-    });
+    if (!token || !bannerFile) return;
+
+    try {
+      if (banner) {
+        await dispatch(updateBanner({ token, bannerId: banner.id, file: bannerFile })).unwrap();
+      } else {
+        await dispatch(createBanner({ token, file: bannerFile })).unwrap();
+      }
+      onSave();
+    } catch (error) {
+      setFieldErrors({ submit: error });
+    }
   };
 
   return (
@@ -87,16 +100,19 @@ export default function BannerModal({ banner, onSave, onClose }) {
                 fieldErrors.image ? "border-red-500" : "border-gray-300"
               }`}
             >
-              {bannerImage ? (
+              {bannerPreview ? (
                 <div className="relative inline-block">
                   <img
-                    src={bannerImage}
+                    src={bannerPreview}
                     alt="Banner Preview"
                     className="h-40 w-full object-cover rounded-lg max-w-sm"
                   />
                   <button
                     type="button"
-                    onClick={() => setBannerImage(null)}
+                    onClick={() => {
+                      setBannerPreview(null);
+                      setBannerFile(null);
+                    }}
                     className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 cursor-pointer"
                   >
                     <MdClose size={16} />
@@ -132,16 +148,17 @@ export default function BannerModal({ banner, onSave, onClose }) {
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-2 border border-gray-300 text-gray-900 font-medium rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+              className="px-6 py-2 border border-gray-300 text-gray-900 font-medium rounded-full hover:bg-gray-50 hover:shadow-md hover:scale-105 transition-all shadow-sm cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
+              disabled={loading}
               style={{ backgroundColor: "var(--primary)" }}
-              className="px-6 py-2 text-white font-medium rounded-lg hover:opacity-90 transition-opacity cursor-pointer"
+              className="px-6 py-2 text-white font-medium rounded-full hover:shadow-lg hover:scale-105 transition-all shadow-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {banner ? "Update Banner" : "Upload Banner"}
+              {loading ? "Uploading..." : banner ? "Update Banner" : "Upload Banner"}
             </button>
           </div>
         </form>

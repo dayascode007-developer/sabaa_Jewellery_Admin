@@ -12,6 +12,7 @@ import {
   FaSun,
 } from "react-icons/fa";
 import { MdLocalFlorist, MdDiamond } from "react-icons/md";
+import { GrFormNextLink } from "react-icons/gr";
 import SuccessModal from "@/components/modals/SuccessModal";
 
 export default function AddProductForm({ productId = null }) {
@@ -130,7 +131,13 @@ export default function AddProductForm({ productId = null }) {
       try {
         const decoded = JSON.parse(storedData);
         setIsEditMode(true);
-        setFormData(decoded.formData || formData);
+        const loadedFormData = decoded.formData || formData;
+        setFormData({
+          ...loadedFormData,
+          font: Array.isArray(loadedFormData.font) ? loadedFormData.font : [],
+          color: Array.isArray(loadedFormData.color) ? loadedFormData.color : [],
+          symbol: Array.isArray(loadedFormData.symbol) ? loadedFormData.symbol : [],
+        });
         setMainImage(decoded.mainImage || null);
         setSubImageSlots(decoded.subImageSlots || [{ id: 1, image: null }]);
         setRingSizes(decoded.ringSizes || [{ id: 1, size: "" }]);
@@ -154,6 +161,15 @@ export default function AddProductForm({ productId = null }) {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleTitleChange = (e) => {
+    let value = e.target.value;
+    value = value.replace(/[^a-zA-Z0-9\s\-]/g, "");
+    if (value.length > 0) {
+      value = value.charAt(0).toUpperCase() + value.slice(1);
+    }
+    setFormData((prev) => ({ ...prev, title: value }));
   };
 
   const handleCheckboxChange = (fieldName, option) => {
@@ -355,7 +371,7 @@ export default function AddProductForm({ productId = null }) {
                   type="text"
                   name="title"
                   value={formData.title}
-                  onChange={handleInputChange}
+                  onChange={handleTitleChange}
                   placeholder="Enter product title"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-black"
                   style={{ "--tw-ring-color": "var(--primary)" }}
@@ -495,7 +511,7 @@ export default function AddProductForm({ productId = null }) {
                     type="button"
                     onClick={addSubImageSlot}
                     style={{ backgroundColor: "var(--primary)" }}
-                    className="px-4 py-2 text-white font-medium rounded-lg hover:opacity-90 transition-opacity text-sm"
+                    className="px-4 py-2 text-white font-medium rounded-full hover:shadow-lg hover:scale-105 transition-all text-sm shadow-md cursor-pointer"
                   >
                     + Add image
                   </button>
@@ -1173,7 +1189,7 @@ export default function AddProductForm({ productId = null }) {
             <button
               type="button"
               onClick={handlePrevious}
-              className="px-6 py-2 border border-gray-300 text-gray-900 font-medium rounded-lg hover:bg-gray-50 transition-colors"
+              className="px-6 py-2 border border-gray-300 text-gray-900 font-medium rounded-full hover:bg-gray-50 hover:shadow-lg hover:scale-105 transition-all shadow-sm cursor-pointer"
             >
               Previous
             </button>
@@ -1187,15 +1203,16 @@ export default function AddProductForm({ productId = null }) {
                 handleNext();
               }}
               style={{ backgroundColor: "var(--primary)" }}
-              className="px-6 py-2 text-white font-medium rounded-lg hover:opacity-90 transition-opacity cursor-pointer"
+              className="px-6 py-2 text-white font-medium rounded-full hover:shadow-lg hover:scale-105 transition-all cursor-pointer shadow-md flex items-center gap-2"
             >
               Next
+              <GrFormNextLink size={20} />
             </button>
           ) : (
             <button
               type="submit"
               style={{ backgroundColor: "var(--primary)" }}
-              className="px-6 py-2 text-white font-medium rounded-lg hover:opacity-90 transition-opacity cursor-pointer"
+              className="px-6 py-2 text-white font-medium rounded-full hover:shadow-lg hover:scale-105 transition-all cursor-pointer shadow-md"
             >
               {isEditMode ? "Update Product" : "Publish Product"}
             </button>
@@ -1209,8 +1226,8 @@ export default function AddProductForm({ productId = null }) {
         onClose={handleSuccessModalClose}
         title={
           isEditMode
-            ? "Product updated successfully"
-            : "Product created successfully"
+            ? "Product Updated Successfully"
+            : "Product Created Successfully"
         }
         message={
           isEditMode

@@ -116,7 +116,7 @@ export default function CategoriesTable({ categories }) {
       <SuccessModal
         isOpen={showSuccessModal}
         onClose={handleSuccessClose}
-        title="Category deleted successfully"
+        title="Category Deleted Successfully"
         message={`${deletedCategoryName} has been removed from categories.`}
         buttonText="Done"
       />

@@ -87,14 +87,14 @@ export default function UpdateStockModal({ isOpen, onClose, product }) {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 border border-gray-300 text-gray-900 font-medium rounded-lg hover:bg-gray-50 transition-colors"
+              className="flex-1 px-4 py-2 border border-gray-300 text-gray-900 font-medium rounded-full hover:bg-gray-50 hover:shadow-md hover:scale-105 transition-all shadow-sm cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               style={{ backgroundColor: "var(--primary)" }}
-              className="flex-1 px-4 py-2 text-white font-medium rounded-lg hover:opacity-90 transition-opacity"
+              className="flex-1 px-4 py-2 text-white font-medium rounded-full hover:shadow-lg hover:scale-105 transition-all shadow-md cursor-pointer"
             >
               Save
             </button>
@@ -106,7 +106,7 @@ export default function UpdateStockModal({ isOpen, onClose, product }) {
       <SuccessModal
         isOpen={showSuccessModal}
         onClose={handleSuccessClose}
-        title="Stock updated successfully"
+        title="Stock Updated Successfully"
         message={`Stock quantity has been updated to ${stock} units${lowStockThreshold ? ` and low stock threshold to ${lowStockThreshold}.` : "."}`}
         buttonText="Done"
       />

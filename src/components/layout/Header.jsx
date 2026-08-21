@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
-import { MdMenu, MdSearch } from "react-icons/md";
+import { MdMenu } from "react-icons/md";
 import { FaChevronDown } from "react-icons/fa6";
 import { IoIosNotificationsOutline } from "react-icons/io";
 import { IoChatboxEllipsesOutline } from "react-icons/io5";
@@ -78,17 +78,6 @@ export default function Header({ isCollapsed, pathname }) {
         <h2 className="text-xl font-semibold text-gray-900">
           {getPageTitle()}
         </h2>
-      </div>
-      <div className="flex items-center bg-gray-100 rounded-lg w-80 border border-gray-300">
-        <input
-          type="text"
-          placeholder="Search products, orders, customers..."
-          className="px-4 py-2 bg-transparent text-sm text-gray-700 flex-1 focus:outline-none"
-          style={{ "--tw-ring-color": "var(--primary)" }}
-        />
-        <button className="px-3 text-gray-600 hover:text-gray-900">
-          <MdSearch className="w-5 h-5" />
-        </button>
       </div>
       <div className="flex items-center gap-6">
         <button className="relative p-2 border border-gray-300 hover:border-gray-400 rounded-full text-gray-600 hover:text-gray-900 transition-colors">

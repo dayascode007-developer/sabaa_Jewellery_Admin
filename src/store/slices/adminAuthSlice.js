@@ -98,14 +98,10 @@ const adminAuthSlice = createSlice({
         const token = localStorage.getItem("adminToken");
         const adminData = localStorage.getItem("adminData");
 
-        console.log("🔄 Hydrating from localStorage...");
         if (token && adminData) {
           state.token = token;
           state.admin = JSON.parse(adminData);
           state.isAuthenticated = true;
-          console.log("✅ Hydrated successfully");
-        } else {
-          console.log("❌ No data in localStorage");
         }
       }
       state.isHydrated = true;
@@ -132,10 +128,8 @@ const adminAuthSlice = createSlice({
         state.isAuthenticated = true;
 
         // Store in localStorage
-        console.log("💾 Saving to localStorage...");
         localStorage.setItem("adminToken", action.payload.token);
         localStorage.setItem("adminData", JSON.stringify(action.payload.admin));
-        console.log("✅ Saved:", { token: action.payload.token, admin: action.payload.admin });
       })
       .addCase(loginAdmin.rejected, (state, action) => {
         state.isLoading = false;

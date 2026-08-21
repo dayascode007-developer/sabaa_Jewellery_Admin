@@ -1,21 +1,30 @@
+"use client";
+
+import { useRouter } from "next/navigation";
 import {
   MdAdd,
   MdShoppingCart,
-  MdFileDownload,
   MdLocalOffer,
   MdImage,
   MdVisibility,
 } from "react-icons/md";
 
 export default function QuickActions() {
+  const router = useRouter();
+
   const actions = [
-    { label: "Add New Product", icon: MdAdd, href: "#" },
-    { label: "Manage Orders", icon: MdShoppingCart, href: "#" },
-    { label: "Import Products", icon: MdFileDownload, href: "#" },
-    { label: "Coupons", icon: MdLocalOffer, href: "#" },
-    { label: "Add Banner", icon: MdImage, href: "#" },
-    { label: "View Store", icon: MdVisibility, href: "#" },
+    { label: "Add New Product", icon: MdAdd, href: "/products/add" },
+    { label: "Manage Orders", icon: MdShoppingCart, href: "/orders" },
+    { label: "Coupons", icon: MdLocalOffer, href: "/coupons" },
+    { label: "Add Banner", icon: MdImage, href: "/banners" },
+    { label: "View Store", icon: MdVisibility, href: "/inventory" },
   ];
+
+  const handleClick = (href) => {
+    if (href !== "#") {
+      router.push(href);
+    }
+  };
 
   return (
     <div className="bg-white  p-6">
@@ -26,16 +35,17 @@ export default function QuickActions() {
         {actions.map((action, index) => {
           const IconComponent = action.icon;
           return (
-            <a
+            <button
               key={index}
-              href={action.href}
-              className="flex items-center gap-3 px-4 py-3  bg-yellow-50 hover:bg-yellow-100 transition-colors"
+              onClick={() => handleClick(action.href)}
+              disabled={action.href === "#"}
+              className="w-full flex items-center gap-3 px-4 py-3  bg-yellow-50 hover:bg-yellow-100 transition-colors disabled:cursor-not-allowed text-left"
             >
               <IconComponent className="text-lg text-yellow-600" />
               <span className="text-sm font-medium text-yellow-700">
                 {action.label}
               </span>
-            </a>
+            </button>
           );
         })}
       </div>

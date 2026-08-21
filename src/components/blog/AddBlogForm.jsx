@@ -461,7 +461,7 @@ export default function AddBlogForm({ initialBlog = null }) {
             type="button"
             onClick={handleAddSection}
             style={{ backgroundColor: "var(--primary)" }}
-            className="w-auto px-6 py-2 text-white font-medium rounded-lg hover:opacity-90 transition-opacity"
+            className="w-auto px-6 py-2 text-white font-medium rounded-full hover:shadow-lg hover:scale-105 transition-all shadow-md cursor-pointer"
           >
             + Add Content Section
           </button>
@@ -483,7 +483,7 @@ export default function AddBlogForm({ initialBlog = null }) {
       <SuccessModal
         isOpen={showSuccessModal}
         onClose={handleSuccessClose}
-        title={isEditing ? "Blog updated successfully" : "Blog published successfully"}
+        title={isEditing ? "Blog Updated Successfully" : "Blog Published Successfully"}
         message={isEditing ? "Your blog post has been updated." : "Your blog post has been published and is now live."}
         buttonText="View Blog"
       />

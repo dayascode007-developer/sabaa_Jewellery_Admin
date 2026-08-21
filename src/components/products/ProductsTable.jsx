@@ -350,7 +350,7 @@ export default function ProductsTable({ products }) {
       <SuccessModal
         isOpen={showSuccessModal}
         onClose={handleSuccessClose}
-        title="Product deleted successfully"
+        title="Product Deleted Successfully"
         message={`${deletedProductName} has been removed from the catalog.`}
         buttonText="Done"
       />

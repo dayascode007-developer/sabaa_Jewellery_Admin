@@ -165,7 +165,7 @@ export default function BlogDisplay({ blog, onEdit, onDelete, onBack }) {
       <SuccessModal
         isOpen={showSuccessModal}
         onClose={handleSuccessClose}
-        title="Blog deleted successfully"
+        title="Blog Deleted Successfully"
         message={`"${blog.title}" has been removed.`}
         buttonText="Done"
       />

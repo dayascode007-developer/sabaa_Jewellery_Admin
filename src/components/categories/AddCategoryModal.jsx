@@ -68,14 +68,14 @@ export default function AddCategoryModal({ isOpen, onClose, category }) {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 border border-gray-300 text-gray-900 font-medium rounded-lg hover:bg-gray-50 transition-colors"
+              className="flex-1 px-4 py-2 border border-gray-300 text-gray-900 font-medium rounded-full hover:bg-gray-50 hover:shadow-md hover:scale-105 transition-all shadow-sm cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               style={{ backgroundColor: "var(--primary)" }}
-              className="flex-1 px-4 py-2 text-white font-medium rounded-lg hover:opacity-90 transition-opacity"
+              className="flex-1 px-4 py-2 text-white font-medium rounded-full hover:shadow-lg hover:scale-105 transition-all shadow-md cursor-pointer"
             >
               {category ? "Update" : "Add"}
             </button>
@@ -87,7 +87,7 @@ export default function AddCategoryModal({ isOpen, onClose, category }) {
       <SuccessModal
         isOpen={showSuccessModal}
         onClose={handleSuccessClose}
-        title={category ? "Category updated successfully" : "Category added successfully"}
+        title={category ? "Category Updated Successfully" : "Category Added Successfully"}
         message={
           category
             ? `${categoryName} has been updated.`

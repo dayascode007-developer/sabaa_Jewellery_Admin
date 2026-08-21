@@ -64,7 +64,7 @@ export default function BlogList({ blogs }) {
           <button
             onClick={() => router.push("/blog/new")}
             style={{ backgroundColor: "var(--primary)" }}
-            className="px-6 py-2 text-white font-medium rounded-lg hover:opacity-90 transition-opacity cursor-pointer"
+            className="px-6 py-2 text-white font-medium rounded-full hover:shadow-lg hover:scale-105 transition-all shadow-md cursor-pointer"
           >
             + New Blog
           </button>

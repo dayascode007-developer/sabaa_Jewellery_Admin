@@ -62,8 +62,8 @@ export default function Sidebar({ isCollapsed, pathname }) {
                   </div>
                   {!isCollapsed && <MdKeyboardArrowRight className={`w-5 h-5 text-gray-400 transition-transform duration-300 shrink-0`} style={{transform: expandedMenu === item.name ? "rotate(90deg)" : "rotate(0deg)"}} />}
                 </Link>
-                {!isCollapsed && expandedMenu === item.name && (
-                  <div className="ml-6 space-y-1 mt-1">
+                {!isCollapsed && (
+                  <div className={`ml-6 space-y-1 mt-1 overflow-hidden ${expandedMenu === item.name ? "submenu-enter" : "submenu-exit"}`}>
                     {item.submenu.map((subitem) => (
                       <Link key={subitem.name} href={`${subitem.href}?expand=${item.name}`} className={`block px-4 py-2 text-sm rounded-lg transition-colors ${isActive(subitem.href) ? "bg-[#430121] text-white" : "text-black hover:bg-gray-50"}`}>
                         <span>•&nbsp;&nbsp;{subitem.name}</span>
