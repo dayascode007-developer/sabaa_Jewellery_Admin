@@ -1,25 +1,48 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import { MdClose, MdCloudUpload } from "react-icons/md";
+import { PiMicrosoftExcelLogoThin } from "react-icons/pi";
+import BulkUploadModal from "./BulkUploadModal";
 import {
-  FaStar,
-  FaHeart,
-  FaLeaf,
-  FaMoon,
-  FaCircle,
-  FaSun,
-} from "react-icons/fa";
-import { MdLocalFlorist, MdDiamond } from "react-icons/md";
+  createProduct,
+  updateProduct,
+  fetchProducts,
+} from "@/store/slices/productsSlice";
+import { fetchCategories } from "@/store/slices/categoriesSlice";
+import { fetchSubCategoriesByCategory } from "@/store/slices/subCategoriesSlice";
+import { fetchSymbols } from "@/store/slices/symbolsSlice";
+import CustomDropdown from "@/components/common/CustomDropdown";
 import { GrFormNextLink } from "react-icons/gr";
 import SuccessModal from "@/components/modals/SuccessModal";
+import AddSymbolModal from "./AddSymbolModal";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 export default function AddProductForm({ productId = null }) {
   const router = useRouter();
+  const dispatch = useDispatch();
+  const { loading: submitting } = useSelector((state) => state.products);
+  const { categories } = useSelector((state) => state.categories);
+  const { subCategories } = useSelector((state) => state.subCategories);
+  const { symbols } = useSelector((state) => state.symbols);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [editProductId, setEditProductId] = useState(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showBulkUploadModal, setShowBulkUploadModal] = useState(false);
+  const [showAddSymbolModal, setShowAddSymbolModal] = useState(false);
   const [activeTab, setActiveTab] = useState("general");
+
+  // Fetch categories and symbols on mount
+  useEffect(() => {
+    if (categories.length === 0) {
+      dispatch(fetchCategories());
+    }
+    dispatch(fetchSymbols());
+  }, [dispatch, categories.length]);
+
   const fontOptions = [
     { name: "Arial", cssFamily: "Arial, sans-serif" },
     { name: "Serif", cssFamily: "serif" },
@@ -34,17 +57,19 @@ export default function AddProductForm({ productId = null }) {
     { name: "Yellow Gold", hex: "#FFC700" },
     { name: "Platinum", hex: "#E8E8E8" },
   ];
-  const symbolOptions = [
-    { name: "Star", iconName: "FaStar", icon: FaStar },
-    { name: "Heart", iconName: "FaHeart", icon: FaHeart },
-    { name: "Om", iconName: "Om", text: "ॐ" },
-    { name: "Flower", iconName: "MdLocalFlorist", icon: MdLocalFlorist },
-    { name: "Leaf", iconName: "FaLeaf", icon: FaLeaf },
-    { name: "Moon", iconName: "FaMoon", icon: FaMoon },
-    { name: "Sun", iconName: "FaSun", icon: FaSun },
-    { name: "Diamond", iconName: "MdDiamond", icon: MdDiamond },
-    { name: "Circle", iconName: "FaCircle", icon: FaCircle },
-  ];
+  const symbolOptions = symbols.map((symbol) => ({
+    name: symbol.name,
+    image: symbol.url,
+  }));
+
+  const subCategoriesData = {
+    rings: ["Gold Rings", "Silver Rings", "Diamond Rings"],
+    earrings: ["Stud Earrings", "Hoop Earrings", "Chandelier Earrings"],
+    necklaces: ["Pendant Necklaces", "Chain Necklaces", "Choker Necklaces"],
+    bracelets: ["Bangles", "Tennis Bracelets", "Charm Bracelets"],
+    anklets: ["Ankle Chains", "Beaded Anklets", "Traditional Anklets"],
+    chains: ["Gold Chains", "Silver Chains", "Mangalsutra"],
+  };
 
   const [formData, setFormData] = useState({
     title: "",
@@ -53,6 +78,7 @@ export default function AddProductForm({ productId = null }) {
     salePrice: "",
     sku: "",
     category: "",
+    subcategories: [],
     quantity: 0,
     minStock: 0,
     trackStock: false,
@@ -78,6 +104,7 @@ export default function AddProductForm({ productId = null }) {
   const [mainImage, setMainImage] = useState(null);
   const [subImageSlots, setSubImageSlots] = useState([{ id: 1, image: null }]);
   const [nextSlotId, setNextSlotId] = useState(2);
+  const [deletedSubImageIds, setDeletedSubImageIds] = useState([]);
   const [ringSizes, setRingSizes] = useState([{ id: 1, size: "" }]);
   const [nextSizeId, setNextSizeId] = useState(2);
   const [detailsSections, setDetailsSections] = useState({
@@ -129,18 +156,70 @@ export default function AddProductForm({ productId = null }) {
     if (storedData) {
       try {
         const decoded = JSON.parse(storedData);
-        setIsEditMode(true);
-        const loadedFormData = decoded.formData || formData;
-        setFormData({
-          ...loadedFormData,
-          font: Array.isArray(loadedFormData.font) ? loadedFormData.font : [],
-          color: Array.isArray(loadedFormData.color) ? loadedFormData.color : [],
-          symbol: Array.isArray(loadedFormData.symbol) ? loadedFormData.symbol : [],
-        });
-        setMainImage(decoded.mainImage || null);
-        setSubImageSlots(decoded.subImageSlots || [{ id: 1, image: null }]);
-        setRingSizes(decoded.ringSizes || [{ id: 1, size: "" }]);
-        setDetailsSections(decoded.detailsSections || detailsSections);
+        const product = decoded.product || decoded.formData;
+
+        if (product) {
+          setIsEditMode(true);
+          setEditProductId(product.id);
+
+          setFormData({
+            title: product.title || "",
+            description: product.description || "",
+            regularPrice: product.regular_price || "",
+            salePrice: product.sale_price || "",
+            sku: product.sku || "",
+            category: product.category_id || "",
+            subcategories: Array.isArray(product.subcategories) ? product.subcategories : [],
+            quantity: product.quantity || 0,
+            minStock: product.min_stock || 0,
+            trackStock: product.track_stock || false,
+            stockStatus: product.stock_status || "in-stock",
+            limitPurchases: product.limit_purchases || false,
+            enableReviews: product.enable_reviews !== false,
+            weight: product.weight || "",
+            length: product.length || "",
+            width: product.width || "",
+            height: product.height || "",
+            size: Array.isArray(product.ring_sizes) ? product.ring_sizes : [],
+            font: Array.isArray(product.fonts) ? product.fonts : [],
+            color: Array.isArray(product.colors) ? product.colors : [],
+            symbol: Array.isArray(product.symbols) ? product.symbols : [],
+            symbolDirection: product.symbol_direction || "",
+            productDetails: product.product_details || "",
+            cleaningPolishing: product.cleaning_polishing || "",
+            usageColorGuarantee: product.usage_color_guarantee || "",
+            returnExchangePolicy: product.return_exchange_policy || "",
+            addressContact: product.address_contact || "",
+          });
+
+          setMainImage(product.main_image || null);
+
+          if (Array.isArray(product.sub_images) && product.sub_images.length > 0) {
+            const loadedSubImages = product.sub_images.map((img) => ({
+              id: img.id,
+              image: img.image_url,
+            }));
+            setSubImageSlots(loadedSubImages);
+            // Set nextSlotId to be one more than the max existing ID to avoid conflicts
+            const maxId = Math.max(...loadedSubImages.map(s => s.id));
+            setNextSlotId(maxId + 1);
+          }
+
+          if (Array.isArray(product.ring_sizes) && product.ring_sizes.length > 0) {
+            setRingSizes(product.ring_sizes);
+          }
+
+          if (product.product_details || product.cleaning_polishing || product.usage_color_guarantee || product.return_exchange_policy || product.address_contact) {
+            setDetailsSections({
+              productDetails: Array.isArray(product.product_details) ? product.product_details : detailsSections.productDetails,
+              cleaningPolishing: Array.isArray(product.cleaning_polishing) ? product.cleaning_polishing : detailsSections.cleaningPolishing,
+              usageColorGuarantee: Array.isArray(product.usage_color_guarantee) ? product.usage_color_guarantee : detailsSections.usageColorGuarantee,
+              returnExchangePolicy: Array.isArray(product.return_exchange_policy) ? product.return_exchange_policy : detailsSections.returnExchangePolicy,
+              addressContact: Array.isArray(product.address_contact) ? product.address_contact : detailsSections.addressContact,
+            });
+          }
+        }
+
         sessionStorage.removeItem("editProductData");
         router.replace(window.location.pathname);
       } catch (e) {
@@ -148,6 +227,36 @@ export default function AddProductForm({ productId = null }) {
       }
     }
   }, [router]);
+
+  // Fetch sub categories when category changes
+  useEffect(() => {
+    if (formData.category) {
+      dispatch(fetchSubCategoriesByCategory(formData.category));
+    }
+  }, [formData.category, dispatch]);
+
+  // Transform subcategories from names to objects with IDs once subCategories are loaded
+  useEffect(() => {
+    if (
+      isEditMode &&
+      subCategories.length > 0 &&
+      Array.isArray(formData.subcategories) &&
+      formData.subcategories.length > 0 &&
+      typeof formData.subcategories[0] === "string"
+    ) {
+      const subCatsWithIds = formData.subcategories
+        .map((subCatName) => {
+          const found = subCategories.find((sc) => sc.name === subCatName);
+          return found ? { id: found.id, name: found.name } : null;
+        })
+        .filter(Boolean);
+
+      setFormData((prev) => ({
+        ...prev,
+        subcategories: subCatsWithIds,
+      }));
+    }
+  }, [subCategories, isEditMode]);
 
   const tabs = [
     { id: "general", label: "General" },
@@ -203,31 +312,30 @@ export default function AddProductForm({ productId = null }) {
   const handleMainImageUpload = (e) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setMainImage(reader.result);
-      };
-      reader.readAsDataURL(file);
+      setMainImage(file);
     }
   };
 
   const handleSubImageUpload = (e, slotId) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setSubImageSlots((prev) =>
-          prev.map((slot) =>
-            slot.id === slotId ? { ...slot, image: reader.result } : slot
-          )
-        );
-      };
-      reader.readAsDataURL(file);
+      setSubImageSlots((prev) =>
+        prev.map((slot) =>
+          slot.id === slotId ? { ...slot, image: file } : slot
+        )
+      );
     }
   };
 
   const removeSubImageSlot = (slotId) => {
-    setSubImageSlots((prev) => prev.filter((slot) => slot.id !== slotId));
+    setSubImageSlots((prev) => {
+      const slotToRemove = prev.find((slot) => slot.id === slotId);
+      // If removing an existing image (URL string), track it for deletion
+      if (slotToRemove && typeof slotToRemove.image === "string") {
+        setDeletedSubImageIds((prevDeleted) => [...prevDeleted, slotId]);
+      }
+      return prev.filter((slot) => slot.id !== slotId);
+    });
   };
 
   const addSubImageSlot = () => {
@@ -293,37 +401,132 @@ export default function AddProductForm({ productId = null }) {
     };
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Only show success modal when actually submitting (on details tab)
+    // Only submit when on details tab
     if (activeTab === "details") {
-      const storageData = prepareDataForStorage();
-      console.log("Data to store in DB:", storageData);
-      setShowSuccessModal(true);
+      // Create FormData with all collected data
+      const submitData = new FormData();
+
+      // Add all form fields
+      submitData.append("title", formData.title);
+      submitData.append("description", formData.description);
+      submitData.append("regularPrice", formData.regularPrice);
+      submitData.append("salePrice", formData.salePrice);
+      submitData.append("sku", formData.sku);
+      submitData.append("categoryId", formData.category);
+      submitData.append(
+        "subcategories",
+        JSON.stringify(formData.subcategories.map(s => typeof s === "object" ? s.name : s))
+      );
+      submitData.append("quantity", formData.quantity);
+      submitData.append("minStock", formData.minStock);
+      submitData.append("trackStock", formData.trackStock);
+      submitData.append("stockStatus", formData.stockStatus);
+      submitData.append("limitPurchases", formData.limitPurchases);
+      submitData.append("enableReviews", formData.enableReviews);
+      submitData.append("weight", formData.weight);
+      submitData.append("length", formData.length);
+      submitData.append("width", formData.width);
+      submitData.append("height", formData.height);
+      submitData.append("ringSizes", JSON.stringify(ringSizes));
+      submitData.append("fonts", JSON.stringify(formData.font));
+      submitData.append("colors", JSON.stringify(formData.color));
+      submitData.append("symbols", JSON.stringify(formData.symbol.map(s => ({ name: s.name }))));
+      submitData.append("symbolDirection", formData.symbolDirection);
+      submitData.append(
+        "productDetails",
+        JSON.stringify(detailsSections.productDetails)
+      );
+      submitData.append(
+        "cleaningPolishing",
+        JSON.stringify(detailsSections.cleaningPolishing)
+      );
+      submitData.append(
+        "usageColorGuarantee",
+        JSON.stringify(detailsSections.usageColorGuarantee)
+      );
+      submitData.append(
+        "returnExchangePolicy",
+        JSON.stringify(detailsSections.returnExchangePolicy)
+      );
+      submitData.append(
+        "addressContact",
+        JSON.stringify(detailsSections.addressContact)
+      );
+
+      // Add main image if it's a new File (not a string/URL)
+      if (mainImage && mainImage instanceof File) {
+        submitData.append("mainImage", mainImage);
+      }
+
+      // Add sub images only if they're new Files (not existing URLs)
+      subImageSlots.forEach((slot) => {
+        if (slot.image && slot.image instanceof File) {
+          submitData.append("subImages", slot.image);
+        }
+      });
+
+      // Add deleted sub-image IDs for deletion
+      if (deletedSubImageIds.length > 0) {
+        submitData.append("deletedSubImageIds", JSON.stringify(deletedSubImageIds));
+      }
+
+      // Dispatch Redux action
+      if (isEditMode) {
+        dispatch(updateProduct({ id: editProductId, formData: submitData }))
+          .then(() => {
+            // Clear edit data cache after successful update
+            sessionStorage.removeItem("editProductData");
+            // Reset deleted sub-image IDs after successful update
+            setDeletedSubImageIds([]);
+            // Show success modal immediately
+            setShowSuccessModal(true);
+          })
+          .catch((error) => alert("Failed to update product: " + error));
+      } else {
+        dispatch(createProduct(submitData))
+          .then(() => {
+            setShowSuccessModal(true);
+          })
+          .catch((error) => alert("Failed to create product: " + error));
+      }
     }
   };
 
   const handleSuccessModalClose = () => {
     setShowSuccessModal(false);
-    if (isEditMode) {
-      router.push("/products");
-    } else {
-      router.push("/products");
-    }
+    // Reload page to refresh all data and images
+    setTimeout(() => {
+      window.location.href = "/products";
+    }, 300);
   };
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">
-          {isEditMode ? "Edit Product" : "Add Product"}
-        </h1>
-        <p className="text-gray-600 mt-1">
-          {isEditMode
-            ? "Update product details"
-            : "Create a new product with images and details"}
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">
+            {isEditMode ? "Edit Product" : "Add Product"}
+          </h1>
+          <p className="text-gray-600 mt-1">
+            {isEditMode
+              ? "Update product details"
+              : "Create a new product with images and details"}
+          </p>
+        </div>
+        {!isEditMode && (
+          <button
+            type="button"
+            onClick={() => setShowBulkUploadModal(true)}
+            style={{ backgroundColor: "var(--primary)" }}
+            className="px-6 py-2 text-white font-medium rounded-full hover:shadow-lg hover:scale-105 transition-all shadow-md cursor-pointer flex items-center gap-2 whitespace-nowrap"
+          >
+            <PiMicrosoftExcelLogoThin size={20} />
+            Bulk Upload
+          </button>
+        )}
       </div>
 
       {/* Tabs */}
@@ -429,26 +632,63 @@ export default function AddProductForm({ productId = null }) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">
-                  Category <span className="text-red-500">*</span>
-                </label>
-                <select
-                  name="category"
+                <CustomDropdown
+                  options={categories}
                   value={formData.category}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-black"
-                  style={{ "--tw-ring-color": "var(--primary)" }}
+                  onChange={(value) =>
+                    setFormData((prev) => ({ ...prev, category: value }))
+                  }
+                  label="Category"
+                  placeholder="Select a category"
                   required
-                >
-                  <option value="">Select Category</option>
-                  <option value="rings">Rings</option>
-                  <option value="earrings">Earrings</option>
-                  <option value="necklaces">Necklaces</option>
-                  <option value="bracelets">Bracelets</option>
-                  <option value="anklets">Anklets</option>
-                  <option value="chains">Chains</option>
-                </select>
+                />
               </div>
+
+              {formData.category && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-2">
+                    Sub Category <span className="text-red-500">*</span>
+                  </label>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-1 mb-4 w-fit">
+                    {subCategories.map((subCat) => (
+                      <label
+                        key={subCat.id}
+                        className="flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={formData.subcategories.some(
+                            (s) => s.id === subCat.id
+                          )}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setFormData((prev) => ({
+                                ...prev,
+                                subcategories: [
+                                  ...prev.subcategories,
+                                  { id: subCat.id, name: subCat.name },
+                                ],
+                              }));
+                            } else {
+                              setFormData((prev) => ({
+                                ...prev,
+                                subcategories: prev.subcategories.filter(
+                                  (s) => s.id !== subCat.id
+                                ),
+                              }));
+                            }
+                          }}
+                          className="w-4 h-4 rounded border-gray-300 cursor-pointer shrink-0"
+                          style={{ accentColor: "var(--primary)" }}
+                        />
+                        <span className="text-sm text-gray-700">
+                          {subCat.name}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -473,15 +713,13 @@ export default function AddProductForm({ productId = null }) {
                     style={{ "--tw-ring-color": "var(--primary)" }}
                   >
                     <option value="standard">Standard</option>
-                    <option value="reduced">Reduced rate</option>
-                    <option value="zero">Zero rate</option>
                   </select>
                 </div>
               </div>
 
               {/* Enable Reviews Checkbox */}
               <div>
-                <label className="flex items-center gap-2">
+                <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
                     name="enableReviews"
@@ -492,7 +730,8 @@ export default function AddProductForm({ productId = null }) {
                         enableReviews: e.target.checked,
                       })
                     }
-                    className="rounded"
+                    className="rounded cursor-pointer"
+                    style={{ accentColor: "var(--primary)" }}
                   />
                   <span className="text-sm font-medium text-gray-900">
                     Enable reviews
@@ -526,7 +765,7 @@ export default function AddProductForm({ productId = null }) {
                       {mainImage ? (
                         <div className="relative inline-block">
                           <img
-                            src={mainImage}
+                            src={mainImage instanceof File ? URL.createObjectURL(mainImage) : mainImage}
                             alt="Main"
                             className="h-32 w-32 object-cover rounded-lg"
                           />
@@ -571,7 +810,7 @@ export default function AddProductForm({ productId = null }) {
                           <div key={slot.id} className="relative h-24 w-24">
                             {slot.image ? (
                               <img
-                                src={slot.image}
+                                src={slot.image instanceof File ? URL.createObjectURL(slot.image) : slot.image}
                                 alt={`Sub ${slot.id}`}
                                 className="h-24 w-24 object-cover rounded-lg"
                               />
@@ -631,7 +870,7 @@ export default function AddProductForm({ productId = null }) {
 
               {/* Stock Management Section */}
               <div>
-                <label className="flex items-center gap-2">
+                <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
                     name="trackStock"
@@ -639,10 +878,12 @@ export default function AddProductForm({ productId = null }) {
                     onChange={(e) =>
                       setFormData({ ...formData, trackStock: e.target.checked })
                     }
-                    className="rounded"
+                    className="rounded cursor-pointer"
+                    style={{ accentColor: "var(--primary)" }}
                   />
                   <span className="text-sm font-medium text-gray-900">
-                    Track stock quantity for this product
+                    Track stock quantity for this product{" "}
+                    <span className="text-red-500">*</span>
                   </span>
                 </label>
               </div>
@@ -653,33 +894,36 @@ export default function AddProductForm({ productId = null }) {
                   Stock status <span className="text-red-500">*</span>
                 </label>
                 <div className="space-y-2">
-                  <label className="flex items-center gap-2">
+                  <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="radio"
                       name="stockStatus"
                       value="in-stock"
                       checked={formData.stockStatus === "in-stock"}
                       onChange={handleInputChange}
+                      style={{ accentColor: "var(--primary)" }}
                     />
                     <span className="text-sm text-gray-700">In stock</span>
                   </label>
-                  <label className="flex items-center gap-2">
+                  <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="radio"
                       name="stockStatus"
                       value="out-of-stock"
                       checked={formData.stockStatus === "out-of-stock"}
                       onChange={handleInputChange}
+                      style={{ accentColor: "var(--primary)" }}
                     />
                     <span className="text-sm text-gray-700">Out of stock</span>
                   </label>
-                  <label className="flex items-center gap-2">
+                  <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="radio"
                       name="stockStatus"
                       value="on-backorder"
                       checked={formData.stockStatus === "on-backorder"}
                       onChange={handleInputChange}
+                      style={{ accentColor: "var(--primary)" }}
                     />
                     <span className="text-sm text-gray-700">On backorder</span>
                   </label>
@@ -705,10 +949,10 @@ export default function AddProductForm({ productId = null }) {
                     />
                   </div>
 
-
                   <div>
                     <label className="block text-sm font-medium text-gray-900 mb-2">
-                      Low stock threshold
+                      Low stock threshold{" "}
+                      <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="number"
@@ -725,7 +969,7 @@ export default function AddProductForm({ productId = null }) {
 
               {/* Sold Individually - Always Visible */}
               <div>
-                <label className="flex items-center gap-2">
+                <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
                     name="limitPurchases"
@@ -736,7 +980,8 @@ export default function AddProductForm({ productId = null }) {
                         limitPurchases: e.target.checked,
                       })
                     }
-                    className="rounded"
+                    className="rounded cursor-pointer"
+                    style={{ accentColor: "var(--primary)" }}
                   />
                   <span className="text-sm font-medium text-gray-900">
                     Limit purchases to 1 item per order
@@ -825,17 +1070,23 @@ export default function AddProductForm({ productId = null }) {
                       ringSizes.filter((slot) => slot.size).length === 12
                     }
                     onChange={(e) => {
+                      const allSizes = [
+                        10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32,
+                      ];
                       if (e.target.checked) {
-                        [10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32].forEach(
-                          (size) => {
-                            if (!ringSizes.some((slot) => slot.size === size)) {
-                              addRingSizeSlot(size);
-                            }
+                        const newSlots = [];
+                        let maxId = Math.max(...ringSizes.map((s) => s.id), 0);
+                        allSizes.forEach((size) => {
+                          if (!ringSizes.some((slot) => slot.size === size)) {
+                            newSlots.push({ id: ++maxId, size });
                           }
-                        );
+                        });
+                        setRingSizes((prev) => [...prev, ...newSlots]);
+                        setNextSizeId(maxId + 1);
                       } else {
-                        setRingSizes([{ id: 1, size: "" }]);
-                        setNextSizeId(2);
+                        setRingSizes((prev) =>
+                          prev.filter((slot) => !allSizes.includes(slot.size))
+                        );
                       }
                     }}
                     className="w-4 h-4 rounded border-gray-300 cursor-pointer shrink-0"
@@ -883,6 +1134,30 @@ export default function AddProductForm({ productId = null }) {
                 <label className="block text-sm font-medium text-gray-900 mb-2">
                   Font
                 </label>
+                <label className="flex items-center gap-1.5 cursor-pointer w-fit mb-2">
+                  <input
+                    type="checkbox"
+                    checked={formData.font.length === fontOptions.length}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        fontOptions.forEach((option) => {
+                          if (
+                            !formData.font.some((f) => f.name === option.name)
+                          ) {
+                            handleCheckboxChange("font", option);
+                          }
+                        });
+                      } else {
+                        setFormData((prev) => ({ ...prev, font: [] }));
+                      }
+                    }}
+                    className="w-4 h-4 rounded border-gray-300 cursor-pointer shrink-0"
+                    style={{ accentColor: "var(--primary)" }}
+                  />
+                  <span className="text-sm font-semibold text-gray-900">
+                    All
+                  </span>
+                </label>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-1 mb-2 w-fit">
                   {fontOptions.map((option) => (
                     <label
@@ -918,6 +1193,30 @@ export default function AddProductForm({ productId = null }) {
                 <label className="block text-sm font-medium text-gray-900 mb-2">
                   Enamel color
                 </label>
+                <label className="flex items-center gap-1.5 cursor-pointer w-fit mb-2">
+                  <input
+                    type="checkbox"
+                    checked={formData.color.length === colorOptions.length}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        colorOptions.forEach((option) => {
+                          if (
+                            !formData.color.some((c) => c.name === option.name)
+                          ) {
+                            handleCheckboxChange("color", option);
+                          }
+                        });
+                      } else {
+                        setFormData((prev) => ({ ...prev, color: [] }));
+                      }
+                    }}
+                    className="w-4 h-4 rounded border-gray-300 cursor-pointer shrink-0"
+                    style={{ accentColor: "var(--primary)" }}
+                  />
+                  <span className="text-sm font-semibold text-gray-900">
+                    All
+                  </span>
+                </label>
                 <div className="grid grid-cols-3 gap-x-4 gap-y-1 mb-2 w-fit">
                   {colorOptions.map((option) => (
                     <label
@@ -949,43 +1248,81 @@ export default function AddProductForm({ productId = null }) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">
-                  Symbol
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium text-gray-900">
+                    Symbol
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setShowAddSymbolModal(true)}
+                    style={{ backgroundColor: "var(--primary)" }}
+                    className="px-3 py-1 text-white text-xs rounded-lg hover:opacity-90 transition-opacity"
+                  >
+                    + Add Symbol
+                  </button>
+                </div>
+                <label className="flex items-center gap-1.5 cursor-pointer w-fit mb-2">
+                  <input
+                    type="checkbox"
+                    checked={formData.symbol.length === symbolOptions.length}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        symbolOptions.forEach((option) => {
+                          if (
+                            !formData.symbol.some((s) => s.name === option.name)
+                          ) {
+                            handleCheckboxChange("symbol", option);
+                          }
+                        });
+                      } else {
+                        setFormData((prev) => ({ ...prev, symbol: [] }));
+                      }
+                    }}
+                    className="w-4 h-4 rounded border-gray-300 cursor-pointer shrink-0"
+                    style={{ accentColor: "var(--primary)" }}
+                  />
+                  <span className="text-sm font-semibold text-gray-900">
+                    All
+                  </span>
                 </label>
-                <div className="grid grid-cols-3 gap-x-4 gap-y-1 mb-2 w-fit">
+                <div className="grid grid-cols-4 gap-2 mb-2">
                   {symbolOptions.map((option) => {
-                    const IconComponent = option.icon;
+                    const isSelected = formData.symbol.some((s) =>
+                      typeof s === "object"
+                        ? s.name === option.name
+                        : s === option.name
+                    );
                     return (
-                      <label
+                      <div
                         key={option.name}
-                        className="flex items-center gap-1.5 cursor-pointer"
+                        className="cursor-pointer flex flex-col items-center gap-1 relative"
                       >
+                        <div
+                          className={`w-16 h-16 rounded-lg border-2 p-1 flex items-center justify-center transition-all ${
+                            isSelected
+                              ? "border-[var(--primary)] bg-blue-50"
+                              : "border-gray-200 bg-white hover:border-gray-300"
+                          }`}
+                        >
+                          <img
+                            src={option.image}
+                            alt={option.name}
+                            className="w-12 h-12 object-contain"
+                          />
+                        </div>
                         <input
                           type="checkbox"
-                          checked={formData.symbol.some((s) =>
-                            typeof s === "object"
-                              ? s.name === option.name
-                              : s === option.name
-                          )}
+                          checked={isSelected}
                           onChange={() =>
                             handleCheckboxChange("symbol", option)
                           }
-                          className="w-4 h-4 rounded border-gray-300 cursor-pointer shrink-0"
+                          className="w-4 h-4 rounded border-gray-300 cursor-pointer"
                           style={{ accentColor: "var(--primary)" }}
                         />
-                        <span className="text-lg shrink-0">
-                          {IconComponent ? (
-                            <IconComponent size={16} />
-                          ) : (
-                            <span style={{ fontSize: "16px" }}>
-                              {option.text}
-                            </span>
-                          )}
-                        </span>
-                        <span className="text-sm text-gray-700 whitespace-nowrap">
+                        <span className="text-xs text-gray-700 text-center">
                           {option.name}
                         </span>
-                      </label>
+                      </div>
                     );
                   })}
                 </div>
@@ -1221,6 +1558,21 @@ export default function AddProductForm({ productId = null }) {
             : "Your new product has been added to the catalog."
         }
         buttonText="Got it"
+      />
+
+      <BulkUploadModal
+        isOpen={showBulkUploadModal}
+        onClose={() => setShowBulkUploadModal(false)}
+      />
+
+      {/* Add Symbol Modal */}
+      <AddSymbolModal
+        isOpen={showAddSymbolModal}
+        onClose={() => setShowAddSymbolModal(false)}
+        onSymbolAdded={() => {
+          dispatch(fetchSymbols());
+          setShowAddSymbolModal(false);
+        }}
       />
     </div>
   );

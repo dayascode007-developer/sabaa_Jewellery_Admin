@@ -1,18 +1,11 @@
-import CategoriesTable from "@/components/categories/CategoriesTable";
+"use client";
 
-export const metadata = {
-  title: "Categories - SaBaa Jewellery Admin",
-};
+import { useState } from "react";
+import CategoriesTable from "@/components/categories/CategoriesTable";
+import SubCategoriesTable from "@/components/categories/SubCategoriesTable";
 
 export default function Categories() {
-  const categories = [
-    { id: 1, name: "Rings", productCount: 15 },
-    { id: 2, name: "Earrings", productCount: 12 },
-    { id: 3, name: "Necklaces", productCount: 8 },
-    { id: 4, name: "Bracelets", productCount: 10 },
-    { id: 5, name: "Anklets", productCount: 6 },
-    { id: 6, name: "Chains", productCount: 9 },
-  ];
+  const [activeTab, setActiveTab] = useState("categories");
 
   return (
     <div className="space-y-6">
@@ -22,8 +15,35 @@ export default function Categories() {
         <p className="text-gray-600 mt-1">Manage product categories</p>
       </div>
 
+      {/* Tabs */}
+      <div className="flex gap-4 border-b border-gray-200">
+        <button
+          onClick={() => setActiveTab("categories")}
+          className={`px-4 py-2 font-medium border-b-2 transition-colors ${
+            activeTab === "categories"
+              ? "border-gray-900 text-gray-900"
+              : "border-transparent text-gray-600 hover:text-gray-900"
+          }`}
+        >
+          Categories
+        </button>
+        <button
+          onClick={() => setActiveTab("subcategories")}
+          className={`px-4 py-2 font-medium border-b-2 transition-colors ${
+            activeTab === "subcategories"
+              ? "border-gray-900 text-gray-900"
+              : "border-transparent text-gray-600 hover:text-gray-900"
+          }`}
+        >
+          Sub Categories
+        </button>
+      </div>
+
       {/* Categories Table */}
-      <CategoriesTable categories={categories} />
+      {activeTab === "categories" && <CategoriesTable />}
+
+      {/* Sub Categories Table */}
+      {activeTab === "subcategories" && <SubCategoriesTable />}
     </div>
   );
 }
