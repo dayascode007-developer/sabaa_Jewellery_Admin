@@ -17,6 +17,7 @@ import { fetchSymbols } from "@/store/slices/symbolsSlice";
 import CustomDropdown from "@/components/common/CustomDropdown";
 import { GrFormNextLink } from "react-icons/gr";
 import SuccessModal from "@/components/modals/SuccessModal";
+import ErrorModal from "@/components/modals/ErrorModal";
 import AddSymbolModal from "./AddSymbolModal";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
@@ -31,6 +32,8 @@ export default function AddProductForm({ productId = null }) {
   const [isEditMode, setIsEditMode] = useState(false);
   const [editProductId, setEditProductId] = useState(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const [showBulkUploadModal, setShowBulkUploadModal] = useState(false);
   const [showAddSymbolModal, setShowAddSymbolModal] = useState(false);
   const [activeTab, setActiveTab] = useState("general");
@@ -475,21 +478,40 @@ export default function AddProductForm({ productId = null }) {
       // Dispatch Redux action
       if (isEditMode) {
         dispatch(updateProduct({ id: editProductId, formData: submitData }))
-          .then(() => {
-            // Clear edit data cache after successful update
-            sessionStorage.removeItem("editProductData");
-            // Reset deleted sub-image IDs after successful update
-            setDeletedSubImageIds([]);
-            // Show success modal immediately
-            setShowSuccessModal(true);
+          .then((result) => {
+            // Check if action was rejected (error)
+            if (result.type === updateProduct.rejected.type) {
+              setErrorMessage(result.payload || "Failed to update product");
+              setShowErrorModal(true);
+            } else {
+              // Clear edit data cache after successful update
+              sessionStorage.removeItem("editProductData");
+              // Reset deleted sub-image IDs after successful update
+              setDeletedSubImageIds([]);
+              // Show success modal immediately
+              setShowSuccessModal(true);
+            }
           })
-          .catch((error) => alert("Failed to update product: " + error));
+          .catch((error) => {
+            setErrorMessage(error.message || "Failed to update product");
+            setShowErrorModal(true);
+          });
       } else {
         dispatch(createProduct(submitData))
-          .then(() => {
-            setShowSuccessModal(true);
+          .then((result) => {
+            // Check if action was rejected (error)
+            if (result.type === createProduct.rejected.type) {
+              setErrorMessage(result.payload || "Failed to create product");
+              setShowErrorModal(true);
+            } else {
+              // Success
+              setShowSuccessModal(true);
+            }
           })
-          .catch((error) => alert("Failed to create product: " + error));
+          .catch((error) => {
+            setErrorMessage(error.message || "Failed to create product");
+            setShowErrorModal(true);
+          });
       }
     }
   };
@@ -1560,9 +1582,21 @@ export default function AddProductForm({ productId = null }) {
         buttonText="Got it"
       />
 
+      <ErrorModal
+        isOpen={showErrorModal}
+        onClose={() => setShowErrorModal(false)}
+        title="Error"
+        message={errorMessage}
+        buttonText="OK"
+      />
+
       <BulkUploadModal
         isOpen={showBulkUploadModal}
         onClose={() => setShowBulkUploadModal(false)}
+        onUploadSuccess={() => {
+          setShowBulkUploadModal(false);
+          dispatch(fetchProducts());
+        }}
       />
 
       {/* Add Symbol Modal */}

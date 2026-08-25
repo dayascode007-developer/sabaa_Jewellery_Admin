@@ -130,18 +130,18 @@ export default function AddSubCategoryModal({ isOpen, onClose, subCategory }) {
             />
           </div>
 
-          <div className="flex gap-3 pt-4">
+          <div className="flex gap-4 pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 border border-gray-300 text-gray-900 font-medium rounded-full hover:bg-gray-50 hover:shadow-md hover:scale-105 transition-all shadow-sm cursor-pointer"
+              className="flex-1 px-5 py-2.5 border-2 border-gray-300 text-gray-700 font-semibold rounded-full hover:bg-gray-100 hover:border-gray-400 active:opacity-80 transition-all shadow-sm cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               style={{ backgroundColor: "var(--primary)" }}
-              className="flex-1 px-4 py-2 text-white font-medium rounded-full hover:shadow-lg hover:scale-105 transition-all shadow-md cursor-pointer"
+              className="flex-1 px-5 py-2.5 text-white font-semibold rounded-full hover:opacity-90 active:opacity-80 transition-all shadow-md hover:shadow-lg cursor-pointer"
             >
               {subCategory ? "Update" : "Add Sub Category"}
             </button>

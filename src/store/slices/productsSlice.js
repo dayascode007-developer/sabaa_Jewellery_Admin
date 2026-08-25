@@ -5,21 +5,37 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 // Async thunks
 export const fetchProducts = createAsyncThunk(
   "products/fetchProducts",
-  async (_, { rejectWithValue }) => {
+  async ({ limit = 10, offset = 0, filters = {} } = {}, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem("adminToken");
-      const response = await fetch(`${API_URL}/api/admin/products`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+      const queryParams = new URLSearchParams({
+        limit,
+        offset,
+        ...(filters.search && { search: filters.search }),
+        ...(filters.category && { category: filters.category }),
+        ...(filters.minPrice && { minPrice: filters.minPrice }),
+        ...(filters.maxPrice && { maxPrice: filters.maxPrice }),
+        ...(filters.stockStatus && { stockStatus: filters.stockStatus }),
       });
+
+      const response = await fetch(
+        `${API_URL}/api/admin/products?${queryParams}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       if (!response.ok) {
         throw new Error("Failed to fetch products");
       }
       const data = await response.json();
-      return data.data;
+      return {
+        products: data.data,
+        total: data.pagination?.total || 0,
+      };
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -123,6 +139,7 @@ export const getProductById = createAsyncThunk(
 const initialState = {
   products: [],
   currentProduct: null,
+  total: 0,
   loading: false,
   error: null,
 };
@@ -146,7 +163,13 @@ const productsSlice = createSlice({
     });
     builder.addCase(fetchProducts.fulfilled, (state, action) => {
       state.loading = false;
-      state.products = action.payload;
+      // Handle both array (legacy) and object with products and total
+      if (Array.isArray(action.payload)) {
+        state.products = action.payload;
+      } else {
+        state.products = action.payload.products || [];
+        state.total = action.payload.total || 0;
+      }
     });
     builder.addCase(fetchProducts.rejected, (state, action) => {
       state.loading = false;

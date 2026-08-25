@@ -80,7 +80,7 @@ export default function SubCategoriesTable() {
             <button
               onClick={handleAddClick}
               style={{ backgroundColor: "var(--primary)" }}
-              className="px-4 py-2 text-white font-medium rounded-lg hover:opacity-90 transition-opacity"
+              className="px-5 py-2.5 text-white font-medium rounded-full hover:opacity-90 active:opacity-80 transition-all shadow-sm cursor-pointer"
             >
               + Add Sub Category
             </button>
