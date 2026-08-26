@@ -6,6 +6,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { loadAdminFromStorage } from "@/store/slices/adminAuthSlice";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
+import InventoryAlertModal from "@/components/common/InventoryAlertModal";
 
 export default function DashboardLayout({ children }) {
   const searchParams = useSearchParams();
@@ -42,6 +43,7 @@ export default function DashboardLayout({ children }) {
 
   return (
     <div className="flex">
+      <InventoryAlertModal />
       <Sidebar isCollapsed={isCollapsed} pathname={pathname} />
       <div className="flex-1 transition-all duration-800 ease-in-out" style={{marginLeft: isCollapsed ? "80px" : "256px"}}>
         <Header isCollapsed={isCollapsed} pathname={pathname} />

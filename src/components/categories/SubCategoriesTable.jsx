@@ -68,9 +68,12 @@ export default function SubCategoriesTable() {
     return categories.find((cat) => cat.id === categoryId)?.name || "—";
   };
 
+  // Only show skeleton on initial load, not when switching data
+  const isInitialLoading = loading && subCategories.length === 0;
+
   return (
     <>
-      {loading ? (
+      {isInitialLoading ? (
         <SkeletonLoader type="table" count={5} />
       ) : (
         <div className="bg-white rounded-lg shadow-sm">
@@ -90,6 +93,9 @@ export default function SubCategoriesTable() {
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 w-12">
+                  No.
+                </th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
                   Sub Category Name
                 </th>
@@ -104,13 +110,16 @@ export default function SubCategoriesTable() {
             <tbody className="divide-y divide-gray-200">
               {subCategories.length === 0 ? (
                 <tr>
-                  <td colSpan="3" className="px-6 py-4 text-center text-gray-600">
+                  <td colSpan="4" className="px-6 py-4 text-center text-gray-600">
                     No sub categories found
                   </td>
                 </tr>
               ) : (
-                subCategories.map((subCategory) => (
+                subCategories.map((subCategory, index) => (
                   <tr key={subCategory.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 text-sm font-medium text-gray-600 w-12">
+                      {index + 1}
+                    </td>
                     <td className="px-6 py-4">
                       <p className="text-sm font-medium text-gray-900">{subCategory.name}</p>
                     </td>

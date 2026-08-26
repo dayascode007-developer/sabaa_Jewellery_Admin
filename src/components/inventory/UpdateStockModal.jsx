@@ -1,28 +1,57 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { MdClose } from "react-icons/md";
 import SuccessModal from "@/components/modals/SuccessModal";
+import { updateInventoryStock, fetchInventoryStats } from "@/store/slices/inventorySlice";
+import { fetchAlertProducts } from "@/store/slices/productsSlice";
 
 export default function UpdateStockModal({ isOpen, onClose, product }) {
+  const dispatch = useDispatch();
+  const { loading, updateError } = useSelector((state) => state.inventory);
   const [stock, setStock] = useState("");
   const [lowStockThreshold, setLowStockThreshold] = useState("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (isOpen && product) {
       setStock(product.stock.toString());
       setLowStockThreshold(product.lowStockThreshold?.toString() || "");
+      setError(null);
     }
   }, [isOpen, product]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setShowSuccessModal(true);
+    setError(null);
+
+    if (stock === undefined || stock === "" || isNaN(stock)) {
+      setError("Stock quantity is required");
+      return;
+    }
+
+    dispatch(
+      updateInventoryStock({
+        productId: product.id,
+        stock: parseInt(stock, 10),
+        lowStockThreshold:
+          lowStockThreshold !== "" ? parseInt(lowStockThreshold, 10) : null,
+      })
+    ).then((result) => {
+      if (result.payload) {
+        setShowSuccessModal(true);
+      } else if (result.payload === undefined) {
+        setError(updateError || "Failed to update stock");
+      }
+    });
   };
 
   const handleSuccessClose = () => {
     setShowSuccessModal(false);
+    dispatch(fetchAlertProducts());
+    dispatch(fetchInventoryStats());
     onClose();
   };
 
@@ -56,6 +85,12 @@ export default function UpdateStockModal({ isOpen, onClose, product }) {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
+          {(error || updateError) && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+              <p className="text-sm text-red-600">{error || updateError}</p>
+            </div>
+          )}
+
           <div>
             <label className="block text-sm font-medium text-gray-900 mb-2">
               Stock Quantity
@@ -93,10 +128,11 @@ export default function UpdateStockModal({ isOpen, onClose, product }) {
             </button>
             <button
               type="submit"
+              disabled={loading}
               style={{ backgroundColor: "var(--primary)" }}
-              className="flex-1 px-4 py-2 text-white font-medium rounded-full hover:shadow-lg hover:scale-105 transition-all shadow-md cursor-pointer"
+              className="flex-1 px-4 py-2 text-white font-medium rounded-full hover:shadow-lg hover:scale-105 transition-all shadow-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Save
+              {loading ? "Saving..." : "Save"}
             </button>
           </div>
         </form>

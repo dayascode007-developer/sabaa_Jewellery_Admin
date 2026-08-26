@@ -12,7 +12,9 @@ export default function CustomDropdown({
   required = false,
 }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [openUpward, setOpenUpward] = useState(false);
   const dropdownRef = useRef(null);
+  const buttonRef = useRef(null);
 
   const selectedOption = options.find((opt) => opt.id === value);
 
@@ -27,6 +29,15 @@ export default function CustomDropdown({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    if (isOpen && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const spaceAbove = rect.top;
+      setOpenUpward(spaceBelow < 250 && spaceAbove > 250);
+    }
+  }, [isOpen]);
+
   return (
     <div className="w-full">
       {label && (
@@ -36,6 +47,7 @@ export default function CustomDropdown({
       )}
       <div className="relative" ref={dropdownRef}>
         <button
+          ref={buttonRef}
           type="button"
           onClick={() => setIsOpen(!isOpen)}
           className="w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-white text-black font-medium text-left flex items-center justify-between hover:border-gray-400 transition-colors focus:outline-none focus:ring-2 focus:ring-opacity-50"
@@ -53,7 +65,11 @@ export default function CustomDropdown({
         </button>
 
         {isOpen && (
-          <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
+          <div className={`absolute left-0 right-0 bg-white border border-gray-300 rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto ${
+            openUpward
+              ? "bottom-full mb-1"
+              : "top-full mt-1"
+          }`}>
             {options.map((option) => (
               <button
                 key={option.id}

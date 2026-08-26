@@ -59,9 +59,12 @@ export default function CategoriesTable() {
     dispatch(fetchCategories());
   };
 
+  // Only show skeleton on initial load, not when switching data
+  const isInitialLoading = loading && categories.length === 0;
+
   return (
     <>
-      {loading ? (
+      {isInitialLoading ? (
         <SkeletonLoader type="table" count={5} />
       ) : (
         <div className="bg-white rounded-lg shadow-sm">
@@ -81,6 +84,9 @@ export default function CategoriesTable() {
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 w-12">
+                  No.
+                </th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
                   Category Name
                 </th>
@@ -95,17 +101,20 @@ export default function CategoriesTable() {
             <tbody className="divide-y divide-gray-200">
               {categories.length === 0 ? (
                 <tr>
-                  <td colSpan="3" className="px-6 py-4 text-center text-gray-600">
+                  <td colSpan="4" className="px-6 py-4 text-center text-gray-600">
                     No categories found
                   </td>
                 </tr>
               ) : (
-                categories.map((category) => {
+                categories.map((category, index) => {
                   const categorySubCategories = subCategories.filter(
                     (sub) => sub.category_id === category.id
                   );
                   return (
                     <tr key={category.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 text-sm font-medium text-gray-600 w-12">
+                        {index + 1}
+                      </td>
                       <td className="px-6 py-4">
                         <p className="text-sm font-medium text-gray-900">{category.name}</p>
                       </td>

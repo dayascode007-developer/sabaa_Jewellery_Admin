@@ -3,6 +3,28 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 // Async thunks
+export const fetchAlertProducts = createAsyncThunk(
+  "products/fetchAlertProducts",
+  async (_, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem("adminToken");
+      const response = await fetch(`${API_URL}/api/admin/products/alerts`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) throw new Error("Failed to fetch alert products");
+      const data = await response.json();
+      return data.data;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
 export const fetchProducts = createAsyncThunk(
   "products/fetchProducts",
   async ({ limit = 10, offset = 0, filters = {} } = {}, { rejectWithValue }) => {
@@ -235,6 +257,20 @@ const productsSlice = createSlice({
       );
     });
     builder.addCase(deleteProduct.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    });
+
+    // Fetch alert products
+    builder.addCase(fetchAlertProducts.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(fetchAlertProducts.fulfilled, (state, action) => {
+      state.loading = false;
+      state.products = action.payload || [];
+    });
+    builder.addCase(fetchAlertProducts.rejected, (state, action) => {
       state.loading = false;
       state.error = action.payload;
     });

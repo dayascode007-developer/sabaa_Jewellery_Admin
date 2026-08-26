@@ -6,6 +6,8 @@ import subCategoriesReducer from "./slices/subCategoriesSlice";
 import productsReducer from "./slices/productsSlice";
 import symbolsReducer from "./slices/symbolsSlice";
 import bulkProductsReducer from "./slices/bulkProductsSlice";
+import customersReducer from "./slices/customersSlice";
+import inventoryReducer from "./slices/inventorySlice";
 
 // A new store is created per request so server-rendered pages never share state
 // between users. Register slice reducers here as you add them:
@@ -19,5 +21,7 @@ export const makeStore = () =>
       products: productsReducer,
       symbols: symbolsReducer,
       bulkProducts: bulkProductsReducer,
+      customers: customersReducer,
+      inventory: inventoryReducer,
     },
   });

@@ -283,6 +283,20 @@ export default function AddProductForm({ productId = null }) {
     setFormData((prev) => ({ ...prev, title: value }));
   };
 
+  const handleDescriptionChange = (e) => {
+    let value = e.target.value;
+    if (value.length > 0) {
+      value = value.charAt(0).toUpperCase() + value.slice(1);
+    }
+    setFormData((prev) => ({ ...prev, description: value }));
+  };
+
+  const handleSkuChange = (e) => {
+    let value = e.target.value;
+    value = value.toUpperCase();
+    setFormData((prev) => ({ ...prev, sku: value }));
+  };
+
   const handleCheckboxChange = (fieldName, option) => {
     setFormData((prev) => {
       const currentArray = prev[fieldName] || [];
@@ -610,7 +624,7 @@ export default function AddProductForm({ productId = null }) {
                 <textarea
                   name="description"
                   value={formData.description}
-                  onChange={handleInputChange}
+                  onChange={handleDescriptionChange}
                   placeholder="Enter product description"
                   rows={4}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-black"
@@ -882,7 +896,7 @@ export default function AddProductForm({ productId = null }) {
                   type="text"
                   name="sku"
                   value={formData.sku}
-                  onChange={handleInputChange}
+                  onChange={handleSkuChange}
                   placeholder="e.g., SKU-001"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-black"
                   style={{ "--tw-ring-color": "var(--primary)" }}
