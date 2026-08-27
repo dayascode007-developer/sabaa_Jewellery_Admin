@@ -172,7 +172,9 @@ export default function AddProductForm({ productId = null }) {
             salePrice: product.sale_price || "",
             sku: product.sku || "",
             category: product.category_id || "",
-            subcategories: Array.isArray(product.subcategories) ? product.subcategories : [],
+            subcategories: Array.isArray(product.subcategories)
+              ? product.subcategories
+              : [],
             quantity: product.quantity || 0,
             minStock: product.min_stock || 0,
             trackStock: product.track_stock || false,
@@ -197,28 +199,52 @@ export default function AddProductForm({ productId = null }) {
 
           setMainImage(product.main_image || null);
 
-          if (Array.isArray(product.sub_images) && product.sub_images.length > 0) {
+          if (
+            Array.isArray(product.sub_images) &&
+            product.sub_images.length > 0
+          ) {
             const loadedSubImages = product.sub_images.map((img) => ({
               id: img.id,
               image: img.image_url,
             }));
             setSubImageSlots(loadedSubImages);
             // Set nextSlotId to be one more than the max existing ID to avoid conflicts
-            const maxId = Math.max(...loadedSubImages.map(s => s.id));
+            const maxId = Math.max(...loadedSubImages.map((s) => s.id));
             setNextSlotId(maxId + 1);
           }
 
-          if (Array.isArray(product.ring_sizes) && product.ring_sizes.length > 0) {
+          if (
+            Array.isArray(product.ring_sizes) &&
+            product.ring_sizes.length > 0
+          ) {
             setRingSizes(product.ring_sizes);
           }
 
-          if (product.product_details || product.cleaning_polishing || product.usage_color_guarantee || product.return_exchange_policy || product.address_contact) {
+          if (
+            product.product_details ||
+            product.cleaning_polishing ||
+            product.usage_color_guarantee ||
+            product.return_exchange_policy ||
+            product.address_contact
+          ) {
             setDetailsSections({
-              productDetails: Array.isArray(product.product_details) ? product.product_details : detailsSections.productDetails,
-              cleaningPolishing: Array.isArray(product.cleaning_polishing) ? product.cleaning_polishing : detailsSections.cleaningPolishing,
-              usageColorGuarantee: Array.isArray(product.usage_color_guarantee) ? product.usage_color_guarantee : detailsSections.usageColorGuarantee,
-              returnExchangePolicy: Array.isArray(product.return_exchange_policy) ? product.return_exchange_policy : detailsSections.returnExchangePolicy,
-              addressContact: Array.isArray(product.address_contact) ? product.address_contact : detailsSections.addressContact,
+              productDetails: Array.isArray(product.product_details)
+                ? product.product_details
+                : detailsSections.productDetails,
+              cleaningPolishing: Array.isArray(product.cleaning_polishing)
+                ? product.cleaning_polishing
+                : detailsSections.cleaningPolishing,
+              usageColorGuarantee: Array.isArray(product.usage_color_guarantee)
+                ? product.usage_color_guarantee
+                : detailsSections.usageColorGuarantee,
+              returnExchangePolicy: Array.isArray(
+                product.return_exchange_policy
+              )
+                ? product.return_exchange_policy
+                : detailsSections.returnExchangePolicy,
+              addressContact: Array.isArray(product.address_contact)
+                ? product.address_contact
+                : detailsSections.addressContact,
             });
           }
         }
@@ -434,7 +460,11 @@ export default function AddProductForm({ productId = null }) {
       submitData.append("categoryId", formData.category);
       submitData.append(
         "subcategories",
-        JSON.stringify(formData.subcategories.map(s => typeof s === "object" ? s.name : s))
+        JSON.stringify(
+          formData.subcategories.map((s) =>
+            typeof s === "object" ? s.name : s
+          )
+        )
       );
       submitData.append("quantity", formData.quantity);
       submitData.append("minStock", formData.minStock);
@@ -449,7 +479,10 @@ export default function AddProductForm({ productId = null }) {
       submitData.append("ringSizes", JSON.stringify(ringSizes));
       submitData.append("fonts", JSON.stringify(formData.font));
       submitData.append("colors", JSON.stringify(formData.color));
-      submitData.append("symbols", JSON.stringify(formData.symbol.map(s => ({ name: s.name }))));
+      submitData.append(
+        "symbols",
+        JSON.stringify(formData.symbol.map((s) => ({ name: s.name })))
+      );
       submitData.append("symbolDirection", formData.symbolDirection);
       submitData.append(
         "productDetails",
@@ -486,7 +519,10 @@ export default function AddProductForm({ productId = null }) {
 
       // Add deleted sub-image IDs for deletion
       if (deletedSubImageIds.length > 0) {
-        submitData.append("deletedSubImageIds", JSON.stringify(deletedSubImageIds));
+        submitData.append(
+          "deletedSubImageIds",
+          JSON.stringify(deletedSubImageIds)
+        );
       }
 
       // Dispatch Redux action
@@ -801,7 +837,11 @@ export default function AddProductForm({ productId = null }) {
                       {mainImage ? (
                         <div className="relative inline-block">
                           <img
-                            src={mainImage instanceof File ? URL.createObjectURL(mainImage) : mainImage}
+                            src={
+                              mainImage instanceof File
+                                ? URL.createObjectURL(mainImage)
+                                : mainImage
+                            }
                             alt="Main"
                             className="h-32 w-32 object-cover rounded-lg"
                           />
@@ -846,7 +886,11 @@ export default function AddProductForm({ productId = null }) {
                           <div key={slot.id} className="relative h-24 w-24">
                             {slot.image ? (
                               <img
-                                src={slot.image instanceof File ? URL.createObjectURL(slot.image) : slot.image}
+                                src={
+                                  slot.image instanceof File
+                                    ? URL.createObjectURL(slot.image)
+                                    : slot.image
+                                }
                                 alt={`Sub ${slot.id}`}
                                 className="h-24 w-24 object-cover rounded-lg"
                               />
@@ -1321,7 +1365,7 @@ export default function AddProductForm({ productId = null }) {
                     All
                   </span>
                 </label>
-                <div className="grid grid-cols-4 gap-2 mb-2">
+                <div className="flex flex-wrap items-start gap-x-4 gap-y-3 mb-2">
                   {symbolOptions.map((option) => {
                     const isSelected = formData.symbol.some((s) =>
                       typeof s === "object"
@@ -1334,7 +1378,7 @@ export default function AddProductForm({ productId = null }) {
                         className="cursor-pointer flex flex-col items-center gap-1 relative"
                       >
                         <div
-                          className={`w-16 h-16 rounded-lg border-2 p-1 flex items-center justify-center transition-all ${
+                          className={`w-16 h-16 rounded-4xl border-1 p-1 flex items-center justify-center transition-all ${
                             isSelected
                               ? "border-[var(--primary)] bg-blue-50"
                               : "border-gray-200 bg-white hover:border-gray-300"
@@ -1343,7 +1387,7 @@ export default function AddProductForm({ productId = null }) {
                           <img
                             src={option.image}
                             alt={option.name}
-                            className="w-12 h-12 object-contain"
+                            className="w-8 h-8 object-contain"
                           />
                         </div>
                         <input

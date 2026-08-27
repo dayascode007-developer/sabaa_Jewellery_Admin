@@ -62,12 +62,12 @@ export default function BlogDisplay({ blog, onEdit, onDelete, onBack }) {
         </div>
 
         {/* Main Image */}
-        {blog.mainImage && (
+        {(blog.main_image || blog.mainImage) && (
           <div className="mb-12">
             <img
-              src={blog.mainImage}
+              src={blog.main_image || blog.mainImage}
               alt={blog.title}
-              className="w-full h-96 object-cover rounded-lg shadow-lg"
+              className="w-full h-80 object-cover rounded-lg shadow-lg"
             />
           </div>
         )}
@@ -118,7 +118,6 @@ export default function BlogDisplay({ blog, onEdit, onDelete, onBack }) {
             </div>
           ))}
         </div>
-
       </div>
 
       {/* Delete Confirmation Modal */}
@@ -132,7 +131,8 @@ export default function BlogDisplay({ blog, onEdit, onDelete, onBack }) {
               Delete Blog?
             </h2>
             <p className="text-gray-600 mb-6">
-              Are you sure you want to delete this blog? This action cannot be undone.
+              Are you sure you want to delete this blog? This action cannot be
+              undone.
             </p>
             <div className="flex gap-3">
               <button

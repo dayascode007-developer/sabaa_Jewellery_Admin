@@ -6,6 +6,71 @@ import { usePathname } from "next/navigation";
 import { MdClose, MdWarning } from "react-icons/md";
 import { fetchAlertProducts } from "@/store/slices/productsSlice";
 
+const styles = `
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideScale {
+    from {
+      opacity: 0;
+      transform: scale(0.95) translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.6;
+    }
+  }
+
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  .modal-backdrop {
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  .modal-content {
+    animation: slideScale 0.4s ease-out;
+  }
+
+  .icon-pulse {
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  .product-item {
+    animation: slideIn 0.3s ease-out;
+  }
+
+  .product-item:nth-child(1) { animation-delay: 0.05s; }
+  .product-item:nth-child(2) { animation-delay: 0.1s; }
+  .product-item:nth-child(3) { animation-delay: 0.15s; }
+  .product-item:nth-child(4) { animation-delay: 0.2s; }
+  .product-item:nth-child(5) { animation-delay: 0.25s; }
+  .product-item:nth-child(n+6) { animation-delay: 0.3s; }
+`;
+
 export default function InventoryAlertModal() {
   const dispatch = useDispatch();
   const pathname = usePathname();
@@ -48,14 +113,16 @@ export default function InventoryAlertModal() {
   ).length;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 p-6">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-red-100 rounded-lg">
-              <MdWarning size={24} className="text-red-600" />
-            </div>
+    <>
+      <style>{styles}</style>
+      <div className="modal-backdrop fixed inset-0 bg-black/50 flex items-center justify-center z-[100]">
+        <div className="modal-content bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 p-6">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="icon-pulse p-2 bg-red-100 rounded-lg">
+                <MdWarning size={24} className="text-red-600" />
+              </div>
             <h2 className="text-lg font-semibold text-gray-900">
               Inventory Alert
             </h2>
@@ -80,7 +147,7 @@ export default function InventoryAlertModal() {
           {alertProducts.map((product) => (
             <div
               key={product.id}
-              className="p-3 bg-gray-50 rounded-lg border border-gray-200 flex items-center justify-between"
+              className="product-item p-3 bg-gray-50 rounded-lg border border-gray-200 flex items-center justify-between hover:bg-gray-100 hover:shadow-md transition-all cursor-pointer"
             >
               <div className="flex-1">
                 <p className="text-sm font-medium text-gray-900">
@@ -120,7 +187,8 @@ export default function InventoryAlertModal() {
             Go to Inventory
           </a>
         </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

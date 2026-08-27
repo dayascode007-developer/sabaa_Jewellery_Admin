@@ -5,30 +5,6 @@ export const metadata = {
 };
 
 export default function Blog() {
-  const blogs = [
-    {
-      id: 1,
-      title: "The Art of Panchalogam: A Golden Blend",
-      mainImage: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=400&h=250&fit=crop",
-      author: "Aakash Kumar",
-      publishedDate: "Jan 15, 2024",
-    },
-    {
-      id: 2,
-      title: "Jewelry Care: Maintaining Your Shine",
-      mainImage: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=400&h=250&fit=crop",
-      author: "Priya Sharma",
-      publishedDate: "Jan 10, 2024",
-    },
-    {
-      id: 3,
-      title: "Sustainable Jewelry: Our Commitment",
-      mainImage: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=400&h=250&fit=crop",
-      author: "Rohan Singh",
-      publishedDate: "Jan 5, 2024",
-    },
-  ];
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -38,7 +14,7 @@ export default function Blog() {
       </div>
 
       {/* Blog List */}
-      <BlogList blogs={blogs} />
+      <BlogList />
     </div>
   );
 }

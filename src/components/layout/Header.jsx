@@ -10,10 +10,12 @@ import { IoIosNotificationsOutline } from "react-icons/io";
 import { IoChatboxEllipsesOutline } from "react-icons/io5";
 import { navigationItems } from "@/config/navigation";
 import UserDropdown from "@/components/common/UserDropdown";
+import NotificationModal from "@/components/common/NotificationModal";
 import { fetchAdminDetails } from "@/store/slices/adminAuthSlice";
 
 export default function Header({ isCollapsed, pathname }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const dropdownRef = useRef(null);
   const searchParams = useSearchParams();
   const dispatch = useDispatch();
@@ -63,10 +65,11 @@ export default function Header({ isCollapsed, pathname }) {
   };
 
   return (
-    <header
-      className="bg-white border-b border-gray-200 h-20 flex items-center justify-between px-8 fixed top-0 right-0 z-40 transition-all duration-800 ease-in-out"
-      style={{ left: isCollapsed ? "80px" : "256px" }}
-    >
+    <>
+      <header
+        className="bg-white border-b border-gray-200 h-20 flex items-center justify-between px-8 fixed top-0 right-0 z-40 transition-all duration-800 ease-in-out"
+        style={{ left: isCollapsed ? "80px" : "256px" }}
+      >
       <div className="flex items-center gap-4">
         <Link
           href={toggleSidebar()}
@@ -80,13 +83,16 @@ export default function Header({ isCollapsed, pathname }) {
         </h2>
       </div>
       <div className="flex items-center gap-6">
-        <button className="relative p-2 border border-gray-300 hover:border-gray-400 rounded-full text-gray-600 hover:text-gray-900 transition-colors">
+        <button
+          onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+          className="relative p-2 border border-gray-300 hover:border-gray-400 rounded-full text-gray-600 hover:text-gray-900 transition-colors cursor-pointer"
+        >
           <IoIosNotificationsOutline className="w-6 h-6" />
           <span
             className="absolute -top-2 -right-1 w-5 h-5 flex items-center justify-center text-xs text-white font-bold rounded-full"
             style={{ backgroundColor: "var(--primary)" }}
           >
-            1
+            3
           </span>
         </button>
         <button className="relative p-2 border border-gray-300 hover:border-gray-400 rounded-full text-gray-600 hover:text-gray-900 transition-colors">
@@ -129,6 +135,8 @@ export default function Header({ isCollapsed, pathname }) {
           )}
         </div>
       </div>
-    </header>
+      </header>
+      <NotificationModal isOpen={isNotificationOpen} onClose={() => setIsNotificationOpen(false)} />
+    </>
   );
 }

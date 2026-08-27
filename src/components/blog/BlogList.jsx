@@ -1,13 +1,22 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { useDispatch, useSelector } from "react-redux";
 import { MdArrowForward } from "react-icons/md";
+import { fetchBlogs } from "@/store/slices/blogsSlice";
+import SkeletonLoader from "@/components/common/SkeletonLoader";
 
-export default function BlogList({ blogs }) {
+export default function BlogList() {
   const router = useRouter();
+  const dispatch = useDispatch();
+  const { blogs, loading } = useSelector((state) => state.blogs);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 3;
+
+  useEffect(() => {
+    dispatch(fetchBlogs({ limit: 100, offset: 0 }));
+  }, [dispatch]);
 
   const handleReadMore = (blogId) => {
     router.push(`/blog/${blogId}`);
@@ -17,6 +26,10 @@ export default function BlogList({ blogs }) {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedBlogs = blogs.slice(startIndex, startIndex + itemsPerPage);
 
+  if (loading) {
+    return <SkeletonLoader type="card" count={3} />;
+  }
+
   return (
     <div className="space-y-6">
       {/* Header with Add Blog Button and Pagination */}
@@ -24,7 +37,7 @@ export default function BlogList({ blogs }) {
         <h2 className="text-xl font-semibold text-gray-900">All Blogs</h2>
         <div className="flex items-center gap-4">
           {/* Pagination */}
-          {totalPages > 1 && (
+          {blogs.length > 0 && totalPages > 1 && (
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
@@ -71,7 +84,12 @@ export default function BlogList({ blogs }) {
         </div>
       </div>
 
-      {/* Blog Cards Grid */}
+      {/* Empty State */}
+      {blogs.length === 0 ? (
+        <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
+          <p className="text-gray-600 text-lg font-medium">No Blogs</p>
+        </div>
+      ) : (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {paginatedBlogs.map((blog) => (
           <div
@@ -82,7 +100,7 @@ export default function BlogList({ blogs }) {
             {/* Image */}
             <div className="relative h-48 overflow-hidden bg-gray-200">
               <img
-                src={blog.mainImage}
+                src={blog.main_image || blog.mainImage}
                 alt={blog.title}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               />
@@ -91,7 +109,7 @@ export default function BlogList({ blogs }) {
             {/* Content */}
             <div className="p-4 space-y-3">
               {/* Title */}
-              <h3 className="text-lg font-semibold text-gray-900 line-clamp-2 group-hover:text-blue-600 transition-colors">
+              <h3 className="text-lg font-semibold text-gray-900 line-clamp-2 transition-colors">
                 {blog.title}
               </h3>
 
@@ -101,7 +119,7 @@ export default function BlogList({ blogs }) {
               </div>
 
               {/* Read More Button */}
-              <button className="w-full mt-4 flex items-center justify-center gap-2 px-4 py-2 border border-gray-200 text-gray-900 font-medium rounded-lg hover:bg-gray-50 transition-colors group-hover:border-blue-600 group-hover:text-blue-600">
+              <button className="w-full mt-4 flex items-center justify-center gap-2 px-4 py-2 border border-gray-200 text-gray-900 font-medium rounded-lg hover:bg-gray-50 transition-colors">
                 Read More
                 <MdArrowForward size={16} />
               </button>
@@ -109,6 +127,7 @@ export default function BlogList({ blogs }) {
           </div>
         ))}
       </div>
+      )}
     </div>
   );
 }

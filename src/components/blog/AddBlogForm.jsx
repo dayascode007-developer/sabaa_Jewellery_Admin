@@ -2,10 +2,15 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useDispatch, useSelector } from "react-redux";
 import { MdClose, MdCloudUpload, MdDelete } from "react-icons/md";
 import { TiArrowLeftThick } from "react-icons/ti";
 import dynamic from "next/dynamic";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import SuccessModal from "@/components/modals/SuccessModal";
+import ErrorModal from "@/components/modals/ErrorModal";
+import { createBlog, updateBlog } from "@/store/slices/blogsSlice";
 
 const Editor = dynamic(() => import("@tinymce/tinymce-react").then(mod => mod.Editor), {
   ssr: false,
@@ -14,17 +19,21 @@ const Editor = dynamic(() => import("@tinymce/tinymce-react").then(mod => mod.Ed
 
 export default function AddBlogForm({ initialBlog = null }) {
   const router = useRouter();
+  const dispatch = useDispatch();
+  const { loading } = useSelector((state) => state.blogs);
   const isEditing = !!initialBlog;
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
 
   const [formData, setFormData] = useState({
     title: initialBlog?.title || "",
     description: initialBlog?.description || "",
-    publishedDate: initialBlog?.publishedDate || new Date().toISOString().split("T")[0],
+    publishedDate: initialBlog?.publishedDate ? new Date(initialBlog.publishedDate) : new Date(),
   });
 
-  const [mainImage, setMainImage] = useState(initialBlog?.mainImage || null);
+  const [mainImage, setMainImage] = useState(initialBlog?.main_image || initialBlog?.mainImage || null);
   const [contentSections, setContentSections] = useState(
     initialBlog?.content || [{ id: 1, heading: "", text: "", image: null }]
   );
@@ -34,7 +43,13 @@ export default function AddBlogForm({ initialBlog = null }) {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    let processedValue = value;
+
+    if ((name === "title" || name === "description") && value) {
+      processedValue = value.charAt(0).toUpperCase() + value.slice(1);
+    }
+
+    setFormData((prev) => ({ ...prev, [name]: processedValue }));
     if (fieldErrors[name]) {
       setFieldErrors((prev) => {
         const updated = { ...prev };
@@ -47,18 +62,14 @@ export default function AddBlogForm({ initialBlog = null }) {
   const handleMainImageUpload = (e) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setMainImage(reader.result);
-        if (fieldErrors.mainImage) {
-          setFieldErrors((prev) => {
-            const updated = { ...prev };
-            delete updated.mainImage;
-            return updated;
-          });
-        }
-      };
-      reader.readAsDataURL(file);
+      setMainImage(file);
+      if (fieldErrors.mainImage) {
+        setFieldErrors((prev) => {
+          const updated = { ...prev };
+          delete updated.mainImage;
+          return updated;
+        });
+      }
     }
   };
 
@@ -75,9 +86,15 @@ export default function AddBlogForm({ initialBlog = null }) {
   };
 
   const handleSectionChange = (id, field, value) => {
+    let processedValue = value;
+
+    if (field === "heading" && value) {
+      processedValue = value.charAt(0).toUpperCase() + value.slice(1);
+    }
+
     setContentSections((prev) =>
       prev.map((section) =>
-        section.id === id ? { ...section, [field]: value } : section
+        section.id === id ? { ...section, [field]: processedValue } : section
       )
     );
     if (fieldErrors.content) {
@@ -92,11 +109,7 @@ export default function AddBlogForm({ initialBlog = null }) {
   const handleSectionImageUpload = (e, id) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        handleSectionChange(id, "image", reader.result);
-      };
-      reader.readAsDataURL(file);
+      handleSectionChange(id, "image", file);
     }
   };
 
@@ -105,7 +118,7 @@ export default function AddBlogForm({ initialBlog = null }) {
     router.push("/blog");
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const errors = {};
 
@@ -139,12 +152,41 @@ export default function AddBlogForm({ initialBlog = null }) {
     }
 
     setFieldErrors({});
-    console.log("Blog Data:", {
-      ...formData,
-      mainImage,
-      contentSections,
+    const publishedDateStr = formData.publishedDate instanceof Date
+      ? formData.publishedDate.toISOString().split("T")[0]
+      : formData.publishedDate;
+
+    const formDataWithFiles = new FormData();
+    formDataWithFiles.append("title", formData.title);
+    formDataWithFiles.append("description", formData.description);
+    formDataWithFiles.append("publishedDate", publishedDateStr);
+    formDataWithFiles.append("content", JSON.stringify(contentSections));
+
+    if (mainImage instanceof File) {
+      formDataWithFiles.append("mainImage", mainImage);
+    } else if (mainImage && !isEditing) {
+      formDataWithFiles.append("mainImage", mainImage);
+    }
+
+    contentSections.forEach((section, index) => {
+      if (section.image instanceof File) {
+        formDataWithFiles.append(`sectionImage_${index}`, section.image);
+      }
     });
-    setShowSuccessModal(true);
+
+    try {
+      if (isEditing) {
+        await dispatch(
+          updateBlog({ id: initialBlog.id, formData: formDataWithFiles })
+        ).unwrap();
+      } else {
+        await dispatch(createBlog(formDataWithFiles)).unwrap();
+      }
+      setShowSuccessModal(true);
+    } catch (error) {
+      setErrorMessage(error || "Failed to save blog");
+      setShowErrorModal(true);
+    }
   };
 
   return (
@@ -229,7 +271,7 @@ export default function AddBlogForm({ initialBlog = null }) {
               {mainImage ? (
                 <div className="relative inline-block">
                   <img
-                    src={mainImage}
+                    src={mainImage instanceof File ? URL.createObjectURL(mainImage) : mainImage}
                     alt="Main"
                     className="h-40 w-full object-cover rounded-lg max-w-sm"
                   />
@@ -271,11 +313,13 @@ export default function AddBlogForm({ initialBlog = null }) {
             <label className="block text-sm font-medium text-gray-900 mb-2">
               Published Date <span className="text-red-500">*</span>
             </label>
-            <input
-              type="date"
-              name="publishedDate"
-              value={formData.publishedDate}
-              onChange={handleInputChange}
+            <DatePicker
+              selected={formData.publishedDate}
+              onChange={(date) =>
+                setFormData({ ...formData, publishedDate: date })
+              }
+              dateFormat="dd/MM/yyyy"
+              placeholderText="dd/mm/yyyy"
               className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-black ${
                 fieldErrors.publishedDate ? "border-red-500" : "border-gray-300"
               }`}
@@ -378,7 +422,7 @@ export default function AddBlogForm({ initialBlog = null }) {
                   {section.image ? (
                     <div className="relative inline-block">
                       <img
-                        src={section.image}
+                        src={section.image instanceof File ? URL.createObjectURL(section.image) : section.image}
                         alt="Section"
                         className="h-32 w-48 object-cover rounded"
                       />
@@ -432,7 +476,7 @@ export default function AddBlogForm({ initialBlog = null }) {
           <button
             type="submit"
             style={{ backgroundColor: "var(--primary)" }}
-            className="px-6 py-2 text-white font-medium rounded-lg hover:opacity-90 transition-opacity"
+            className="px-8 py-2.5 text-white font-semibold rounded-full hover:shadow-lg hover:scale-105 transition-all shadow-md cursor-pointer"
           >
             {isEditing ? "Update Blog" : "Publish Blog"}
           </button>
@@ -446,6 +490,15 @@ export default function AddBlogForm({ initialBlog = null }) {
         title={isEditing ? "Blog Updated Successfully" : "Blog Published Successfully"}
         message={isEditing ? "Your blog post has been updated." : "Your blog post has been published and is now live."}
         buttonText="View Blog"
+      />
+
+      {/* Error Modal */}
+      <ErrorModal
+        isOpen={showErrorModal}
+        onClose={() => setShowErrorModal(false)}
+        title="Error"
+        message={errorMessage}
+        buttonText="Try Again"
       />
     </div>
   );
