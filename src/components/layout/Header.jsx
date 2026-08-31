@@ -7,7 +7,6 @@ import { useSelector, useDispatch } from "react-redux";
 import { MdMenu } from "react-icons/md";
 import { FaChevronDown } from "react-icons/fa6";
 import { IoIosNotificationsOutline } from "react-icons/io";
-import { IoChatboxEllipsesOutline } from "react-icons/io5";
 import { navigationItems } from "@/config/navigation";
 import UserDropdown from "@/components/common/UserDropdown";
 import NotificationModal from "@/components/common/NotificationModal";
@@ -93,15 +92,6 @@ export default function Header({ isCollapsed, pathname }) {
             style={{ backgroundColor: "var(--primary)" }}
           >
             3
-          </span>
-        </button>
-        <button className="relative p-2 border border-gray-300 hover:border-gray-400 rounded-full text-gray-600 hover:text-gray-900 transition-colors">
-          <IoChatboxEllipsesOutline className="w-6 h-6" />
-          <span
-            className="absolute -top-2 -right-1 w-5 h-5 flex items-center justify-center text-xs text-white font-bold rounded-full"
-            style={{ backgroundColor: "var(--primary)" }}
-          >
-            1
           </span>
         </button>
         <div

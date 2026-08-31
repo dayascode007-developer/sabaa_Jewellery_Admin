@@ -39,8 +39,13 @@ export const navigationItems = [
     icon: "coupons",
   },
   {
-    name: "Reviews",
+    name: "Customer Reviews",
     href: "/reviews",
+    icon: "reviews",
+  },
+  {
+    name: "Customer Unboxing",
+    href: "/customer-unboxing",
     icon: "reviews",
   },
   {

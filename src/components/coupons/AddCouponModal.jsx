@@ -1,11 +1,20 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { MdClose } from "react-icons/md";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { createCoupon, updateCoupon, clearError } from "@/store/slices/couponsSlice";
+import ErrorModal from "@/components/modals/ErrorModal";
+import SuccessModal from "@/components/modals/SuccessModal";
 
-export default function AddCouponModal({ isOpen, onClose, onSave, coupon }) {
+export default function AddCouponModal({ isOpen, onClose, coupon }) {
+  const dispatch = useDispatch();
+  const { loading, error } = useSelector((state) => state.coupons);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
   const [formData, setFormData] = useState({
     code: "",
     discountType: "percentage",
@@ -20,8 +29,26 @@ export default function AddCouponModal({ isOpen, onClose, onSave, coupon }) {
   const [fieldErrors, setFieldErrors] = useState({});
 
   useEffect(() => {
+    if (!isOpen) {
+      setIsSubmitted(false);
+      setShowErrorModal(false);
+      return;
+    }
+
     if (coupon) {
-      setFormData(coupon);
+      const couponWithDates = {
+        id: coupon.id,
+        code: coupon.code || "",
+        description: coupon.description || "",
+        discountType: coupon.discountType || coupon.discount_type || "percentage",
+        discountValue: coupon.discountValue || coupon.discount_value || "",
+        startDate: coupon.start_date ? new Date(coupon.start_date) : null,
+        expiryDate: coupon.expiry_date ? new Date(coupon.expiry_date) : null,
+        minPurchase: coupon.minPurchase || coupon.min_purchase || 0,
+        maxUses: coupon.maxUses || coupon.max_uses || "",
+        status: coupon.status || "active",
+      };
+      setFormData(couponWithDates);
     } else {
       setFormData({
         code: "",
@@ -36,6 +63,19 @@ export default function AddCouponModal({ isOpen, onClose, onSave, coupon }) {
       });
     }
   }, [coupon, isOpen]);
+
+  useEffect(() => {
+    if (error) {
+      setShowErrorModal(true);
+    }
+  }, [error]);
+
+  useEffect(() => {
+    if (!loading && !error && isSubmitted) {
+      setShowSuccessModal(true);
+      setIsSubmitted(false);
+    }
+  }, [loading, error, isSubmitted]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -53,7 +93,7 @@ export default function AddCouponModal({ isOpen, onClose, onSave, coupon }) {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const errors = {};
 
@@ -86,7 +126,32 @@ export default function AddCouponModal({ isOpen, onClose, onSave, coupon }) {
     }
 
     setFieldErrors({});
-    onSave(formData);
+
+    const formatDateToYYYYMMDD = (date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    };
+
+    const submitData = {
+      code: formData.code,
+      description: formData.description,
+      discountType: formData.discountType,
+      discountValue: parseFloat(formData.discountValue),
+      startDate: formatDateToYYYYMMDD(formData.startDate),
+      expiryDate: formatDateToYYYYMMDD(formData.expiryDate),
+      minPurchase: parseFloat(formData.minPurchase) || 0,
+      maxUses: parseInt(formData.maxUses),
+      status: formData.status,
+    };
+
+    setIsSubmitted(true);
+    if (coupon?.id) {
+      dispatch(updateCoupon({ id: coupon.id, couponData: submitData }));
+    } else {
+      dispatch(createCoupon(submitData));
+    }
   };
 
   if (!isOpen) return null;
@@ -356,6 +421,30 @@ export default function AddCouponModal({ isOpen, onClose, onSave, coupon }) {
           </button>
         </div>
       </div>
+
+      {/* Success Modal */}
+      <SuccessModal
+        isOpen={showSuccessModal}
+        onClose={() => {
+          setShowSuccessModal(false);
+          onClose();
+        }}
+        title="Success"
+        message={coupon ? "Coupon updated successfully" : "Coupon created successfully"}
+        buttonText="Done"
+      />
+
+      {/* Error Modal */}
+      <ErrorModal
+        isOpen={showErrorModal}
+        onClose={() => {
+          setShowErrorModal(false);
+          dispatch(clearError());
+        }}
+        title="Error"
+        message={error || "An error occurred"}
+        buttonText="Try Again"
+      />
     </div>
   );
 }
