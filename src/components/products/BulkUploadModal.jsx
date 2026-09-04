@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { MdClose, MdCloudUpload, MdCheckCircle, MdError } from "react-icons/md";
 import { PiMicrosoftExcelLogoThin } from "react-icons/pi";
-import { confirmBulkUpload, downloadTemplate } from "@/store/slices/bulkProductsSlice";
+import { confirmBulkUpload, downloadTemplate, resetValidation } from "@/store/slices/bulkProductsSlice";
 import SuccessModal from "@/components/modals/SuccessModal";
 
 export default function BulkUploadModal({ isOpen, onClose, onUploadSuccess }) {
@@ -90,6 +90,7 @@ export default function BulkUploadModal({ isOpen, onClose, onUploadSuccess }) {
     setStep("upload");
     setSelectedFile(null);
     setFileError(null);
+    dispatch(resetValidation()); // Clear Redux errors
     onClose();
   };
 

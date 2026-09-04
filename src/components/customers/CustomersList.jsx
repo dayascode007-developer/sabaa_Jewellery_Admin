@@ -54,7 +54,10 @@ export default function CustomersList() {
         "Customer Name": customer.name || "—",
         Email: customer.email || "—",
         Phone: customer.phone || "—",
-        Address: customer.address || "—",
+        Street: customer.address?.street || "—",
+        City: customer.address?.city || "—",
+        State: customer.address?.state || "—",
+        "Postal Code": customer.address?.postalCode || "—",
         "Register Date": formatDate(customer.registeredat),
         Orders: customer.orderscount || 0,
       }));
@@ -216,7 +219,7 @@ export default function CustomersList() {
                       </td>
                       <td className="px-6 py-4">
                         <p className="text-sm text-gray-600">
-                          {customer.address || "—"}
+                          {customer.address?.street || customer.address?.city || "—"}
                         </p>
                       </td>
                       <td className="px-6 py-4">

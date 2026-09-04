@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { getFontOptions } from "@/config/fonts";
 import { useRouter } from "next/navigation";
 import { MdClose, MdCloudUpload } from "react-icons/md";
 import { PiMicrosoftExcelLogoThin } from "react-icons/pi";
@@ -46,14 +47,7 @@ export default function AddProductForm({ productId = null }) {
     dispatch(fetchSymbols());
   }, [dispatch, categories.length]);
 
-  const fontOptions = [
-    { name: "Arial", cssFamily: "Arial, sans-serif" },
-    { name: "Serif", cssFamily: "serif" },
-    { name: "Sans-serif", cssFamily: "sans-serif" },
-    { name: "Monospace", cssFamily: "monospace" },
-    { name: "Georgia", cssFamily: "Georgia, serif" },
-    { name: "Trebuchet MS", cssFamily: "Trebuchet MS, sans-serif" },
-  ];
+  const fontOptions = getFontOptions();
   const colorOptions = [
     { name: "Gold", hex: "#FFD700" },
     { name: "Silver", hex: "#C0C0C0" },
@@ -96,7 +90,7 @@ export default function AddProductForm({ productId = null }) {
     font: [],
     color: [],
     symbol: [],
-    symbolDirection: "",
+    symbolDirection: [],
     productDetails: "",
     cleaningPolishing: "",
     usageColorGuarantee: "",
@@ -172,9 +166,8 @@ export default function AddProductForm({ productId = null }) {
             salePrice: product.sale_price || "",
             sku: product.sku || "",
             category: product.category_id || "",
-            subcategories: Array.isArray(product.subcategories)
-              ? product.subcategories
-              : [],
+            // API already returns subcategories in correct format: [{id, name}]
+            subcategories: Array.isArray(product.subcategories) ? product.subcategories : [],
             quantity: product.quantity || 0,
             minStock: product.min_stock || 0,
             trackStock: product.track_stock || false,
@@ -258,34 +251,20 @@ export default function AddProductForm({ productId = null }) {
   }, [router]);
 
   // Fetch sub categories when category changes
+  // Fetch subcategories when category changes OR on mount if editing with a category
   useEffect(() => {
     if (formData.category) {
       dispatch(fetchSubCategoriesByCategory(formData.category));
     }
   }, [formData.category, dispatch]);
 
-  // Transform subcategories from names to objects with IDs once subCategories are loaded
+  // Ensure subcategories are fetched on mount for edit mode
   useEffect(() => {
-    if (
-      isEditMode &&
-      subCategories.length > 0 &&
-      Array.isArray(formData.subcategories) &&
-      formData.subcategories.length > 0 &&
-      typeof formData.subcategories[0] === "string"
-    ) {
-      const subCatsWithIds = formData.subcategories
-        .map((subCatName) => {
-          const found = subCategories.find((sc) => sc.name === subCatName);
-          return found ? { id: found.id, name: found.name } : null;
-        })
-        .filter(Boolean);
-
-      setFormData((prev) => ({
-        ...prev,
-        subcategories: subCatsWithIds,
-      }));
+    if (isEditMode && formData.category && subCategories.length === 0) {
+      dispatch(fetchSubCategoriesByCategory(formData.category));
     }
-  }, [subCategories, isEditMode]);
+  }, [isEditMode]);
+
 
   const tabs = [
     { id: "general", label: "General" },
@@ -462,7 +441,7 @@ export default function AddProductForm({ productId = null }) {
         "subcategories",
         JSON.stringify(
           formData.subcategories.map((s) =>
-            typeof s === "object" ? s.name : s
+            typeof s === "object" ? s.id : s
           )
         )
       );
@@ -476,14 +455,14 @@ export default function AddProductForm({ productId = null }) {
       submitData.append("length", formData.length);
       submitData.append("width", formData.width);
       submitData.append("height", formData.height);
-      submitData.append("ringSizes", JSON.stringify(ringSizes));
+      submitData.append("ringSizes", JSON.stringify(ringSizes.filter((size) => size.size)));
       submitData.append("fonts", JSON.stringify(formData.font));
       submitData.append("colors", JSON.stringify(formData.color));
       submitData.append(
         "symbols",
         JSON.stringify(formData.symbol.map((s) => ({ name: s.name })))
       );
-      submitData.append("symbolDirection", formData.symbolDirection);
+      submitData.append("symbolDirection", JSON.stringify(formData.symbolDirection));
       submitData.append(
         "productDetails",
         JSON.stringify(detailsSections.productDetails)
@@ -721,44 +700,29 @@ export default function AddProductForm({ productId = null }) {
                   <label className="block text-sm font-medium text-gray-900 mb-2">
                     Sub Category <span className="text-red-500">*</span>
                   </label>
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-1 mb-4 w-fit">
+                  <select
+                    value={formData.subcategories.length > 0 ? formData.subcategories[0].id : ""}
+                    onChange={(e) => {
+                      const selectedSubCat = subCategories.find(
+                        (s) => s.id === parseInt(e.target.value)
+                      );
+                      setFormData((prev) => ({
+                        ...prev,
+                        subcategories: selectedSubCat
+                          ? [{ id: selectedSubCat.id, name: selectedSubCat.name }]
+                          : [],
+                      }));
+                    }}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-black mb-4"
+                    style={{ "--tw-ring-color": "var(--primary)" }}
+                  >
+                    <option value="">Select a sub category</option>
                     {subCategories.map((subCat) => (
-                      <label
-                        key={subCat.id}
-                        className="flex items-center gap-1.5 cursor-pointer"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={formData.subcategories.some(
-                            (s) => s.id === subCat.id
-                          )}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setFormData((prev) => ({
-                                ...prev,
-                                subcategories: [
-                                  ...prev.subcategories,
-                                  { id: subCat.id, name: subCat.name },
-                                ],
-                              }));
-                            } else {
-                              setFormData((prev) => ({
-                                ...prev,
-                                subcategories: prev.subcategories.filter(
-                                  (s) => s.id !== subCat.id
-                                ),
-                              }));
-                            }
-                          }}
-                          className="w-4 h-4 rounded border-gray-300 cursor-pointer shrink-0"
-                          style={{ accentColor: "var(--primary)" }}
-                        />
-                        <span className="text-sm text-gray-700">
-                          {subCat.name}
-                        </span>
-                      </label>
+                      <option key={subCat.id} value={subCat.id}>
+                        {subCat.name}
+                      </option>
                     ))}
-                  </div>
+                  </select>
                 </div>
               )}
 
@@ -1217,16 +1181,22 @@ export default function AddProductForm({ productId = null }) {
                 <label className="flex items-center gap-1.5 cursor-pointer w-fit mb-2">
                   <input
                     type="checkbox"
-                    checked={formData.font.length === fontOptions.length}
+                    checked={fontOptions.every((option) =>
+                      formData.font.some((f) =>
+                        typeof f === "object"
+                          ? f.name === option.name
+                          : f === option.name
+                      )
+                    )}
                     onChange={(e) => {
                       if (e.target.checked) {
-                        fontOptions.forEach((option) => {
-                          if (
-                            !formData.font.some((f) => f.name === option.name)
-                          ) {
-                            handleCheckboxChange("font", option);
-                          }
-                        });
+                        setFormData((prev) => ({
+                          ...prev,
+                          font: fontOptions.map((option) => ({
+                            name: option.name,
+                            cssFamily: option.cssFamily,
+                          })),
+                        }));
                       } else {
                         setFormData((prev) => ({ ...prev, font: [] }));
                       }
@@ -1238,10 +1208,10 @@ export default function AddProductForm({ productId = null }) {
                     All
                   </span>
                 </label>
-                <div className="grid grid-cols-2 gap-x-4 gap-y-1 mb-2 w-fit">
+                <div className="grid grid-cols-3 gap-x-5 gap-y-1 mb-2 w-fit">
                   {fontOptions.map((option) => (
                     <label
-                      key={option.name}
+                      key={option.badge}
                       className="flex items-center gap-1.5 cursor-pointer"
                     >
                       <input
@@ -1256,13 +1226,16 @@ export default function AddProductForm({ productId = null }) {
                         style={{ accentColor: "var(--primary)" }}
                       />
                       <span
-                        className="text-sm whitespace-nowrap"
+                        className="text-sm whitespace-nowrap flex items-center gap-2"
                         style={{
                           fontFamily: option.cssFamily,
                           color: "#374151",
                         }}
                       >
                         {option.name}
+                        <span className="border border-green-500 text-black text-xs px-1.5 py-0.5 rounded-full font-mono font-semibold">
+                          {option.badge}
+                        </span>
                       </span>
                     </label>
                   ))}
@@ -1415,31 +1388,99 @@ export default function AddProductForm({ productId = null }) {
                 <div className="space-y-2">
                   <label className="flex items-center gap-2">
                     <input
-                      type="radio"
-                      name="symbolDirection"
-                      value="left"
-                      checked={formData.symbolDirection === "left"}
-                      onChange={handleInputChange}
+                      type="checkbox"
+                      checked={formData.symbolDirection.length >= 3}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setFormData((prev) => ({
+                            ...prev,
+                            symbolDirection: [
+                              { id: 1, name: "left" },
+                              { id: 2, name: "right" },
+                              { id: 3, name: "center" },
+                            ],
+                          }));
+                        } else {
+                          setFormData((prev) => ({
+                            ...prev,
+                            symbolDirection: [],
+                          }));
+                        }
+                      }}
+                      className="w-4 h-4 rounded border-gray-300 cursor-pointer"
+                      style={{ accentColor: "var(--primary)" }}
+                    />
+                    <span className="text-sm font-medium text-gray-700">All</span>
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={formData.symbolDirection.some((d) => d.name === "left" || d === "left")}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setFormData((prev) => ({
+                            ...prev,
+                            symbolDirection: [...prev.symbolDirection, { id: 1, name: "left" }],
+                          }));
+                        } else {
+                          setFormData((prev) => ({
+                            ...prev,
+                            symbolDirection: prev.symbolDirection.filter(
+                              (d) => (d.name || d) !== "left"
+                            ),
+                          }));
+                        }
+                      }}
+                      className="w-4 h-4 rounded border-gray-300 cursor-pointer"
+                      style={{ accentColor: "var(--primary)" }}
                     />
                     <span className="text-sm text-gray-700">Left</span>
                   </label>
                   <label className="flex items-center gap-2">
                     <input
-                      type="radio"
-                      name="symbolDirection"
-                      value="right"
-                      checked={formData.symbolDirection === "right"}
-                      onChange={handleInputChange}
+                      type="checkbox"
+                      checked={formData.symbolDirection.some((d) => d.name === "right" || d === "right")}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setFormData((prev) => ({
+                            ...prev,
+                            symbolDirection: [...prev.symbolDirection, { id: 2, name: "right" }],
+                          }));
+                        } else {
+                          setFormData((prev) => ({
+                            ...prev,
+                            symbolDirection: prev.symbolDirection.filter(
+                              (d) => (d.name || d) !== "right"
+                            ),
+                          }));
+                        }
+                      }}
+                      className="w-4 h-4 rounded border-gray-300 cursor-pointer"
+                      style={{ accentColor: "var(--primary)" }}
                     />
                     <span className="text-sm text-gray-700">Right</span>
                   </label>
                   <label className="flex items-center gap-2">
                     <input
-                      type="radio"
-                      name="symbolDirection"
-                      value="center"
-                      checked={formData.symbolDirection === "center"}
-                      onChange={handleInputChange}
+                      type="checkbox"
+                      checked={formData.symbolDirection.some((d) => d.name === "center" || d === "center")}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setFormData((prev) => ({
+                            ...prev,
+                            symbolDirection: [...prev.symbolDirection, { id: 3, name: "center" }],
+                          }));
+                        } else {
+                          setFormData((prev) => ({
+                            ...prev,
+                            symbolDirection: prev.symbolDirection.filter(
+                              (d) => (d.name || d) !== "center"
+                            ),
+                          }));
+                        }
+                      }}
+                      className="w-4 h-4 rounded border-gray-300 cursor-pointer"
+                      style={{ accentColor: "var(--primary)" }}
                     />
                     <span className="text-sm text-gray-700">Center</span>
                   </label>

@@ -2,6 +2,379 @@
 
 @import "tailwindcss";
 
+/* Generated fonts CSS - DO NOT EDIT MANUALLY */
+/* Update fonts in /src/config/fonts.js instead */
+@font-face {
+  font-family: "GoldenHillsDEMO";
+  src: url('/fonts/GoldenHillsDEMO.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Athena";
+  src: url('/fonts/athena.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "ArnStylo";
+  src: url('/fonts/arnstylo.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Plain Germanica";
+  src: url('/fonts/plain-germanica.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "SCRIPTBL";
+  src: url('/fonts/scriptbl.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "X_BAMBI";
+  src: url('/fonts/x-bambi.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Baristo";
+  src: url('/fonts/baristo.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Birds of Paradise";
+  src: url('/fonts/birds-of-paradise.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "SHOWG";
+  src: url('/fonts/showg.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Blenda Script";
+  src: url('/fonts/blenda-script.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "BlackLarch";
+  src: url('/fonts/blacklarch.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "BRUSHSCI";
+  src: url('/fonts/brushsci.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Titania";
+  src: url('/fonts/titania-regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "ButterChicken";
+  src: url('/fonts/butterchicken.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "TEXAT BOLD";
+  src: url('/fonts/texat-bold.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "MTCORSVA";
+  src: url('/fonts/mtcorsva.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "COOPBL";
+  src: url('/fonts/coopbl.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "clar73w";
+  src: url('/fonts/clar73w.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Uni Ila.Sundaram";
+  src: url('/fonts/uni-ila-sundaram.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "EchinosParkScript";
+  src: url('/fonts/echinospark-script.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Lucy The Cat";
+  src: url('/fonts/lucy-the-cat.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "MATURASC";
+  src: url('/fonts/maturasc.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "FORTE";
+  src: url('/fonts/forte.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "FRSCRIPT";
+  src: url('/fonts/frscript.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "nautilus pompilius";
+  src: url('/fonts/nautilus-pompilius.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "OLDENGL";
+  src: url('/fonts/oldengl.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "The Tribal Box";
+  src: url('/fonts/tribal-box.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "The Bernardo";
+  src: url('/fonts/the-bernardo.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "TAMIL-UNI019";
+  src: url('/fonts/tamil-uni019.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Uni Ila.Sundaram";
+  src: url('/fonts/uni-ila-sundaram-19.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "TAMIL-UNI029";
+  src: url('/fonts/tamil-uni029.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Tamil008";
+  src: url('/fonts/tamil008.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Tamil012";
+  src: url('/fonts/tamil012.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Tamil027";
+  src: url('/fonts/tamil027.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "TAMIL-UNI001";
+  src: url('/fonts/tamil-uni001.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "TAMIL-UNI025";
+  src: url('/fonts/tamil-uni025.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Tamil052";
+  src: url('/fonts/tamil052.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "st_223";
+  src: url('/fonts/st-223.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "TAMIL-UNI023";
+  src: url('/fonts/tamil-uni023.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Tamil057";
+  src: url('/fonts/tamil057.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Dyuthi";
+  src: url('/fonts/dyuthi.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Akshar Unicode";
+  src: url('/fonts/akshar-unicode.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Suruma";
+  src: url('/fonts/suruma.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "NotoSerifKannada";
+  src: url('/fonts/noto-serif-kannada.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "AnekKannada";
+  src: url('/fonts/anek-kannada.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "TiroKannada";
+  src: url('/fonts/tiro-kannada-italic.ttf') format('truetype');
+  font-weight: normal;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: "TiroKannada";
+  src: url('/fonts/tiro-kannada-regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "TiroTelugu";
+  src: url('/fonts/tiro-telugu-italic.ttf') format('truetype');
+  font-weight: normal;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: "TiroTelugu";
+  src: url('/fonts/tiro-telugu-regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "NotoSerifTelugu";
+  src: url('/fonts/noto-serif-telugu.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "NotoSansDevanagariUI";
+  src: url('/fonts/noto-sans-devanagari-ui.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Mukta";
+  src: url('/fonts/mukta-regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Hind";
+  src: url('/fonts/hind-regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 * {
   font-family: "Lora", serif;
 }
