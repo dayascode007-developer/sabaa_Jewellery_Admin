@@ -18,7 +18,7 @@ export default function UpdateStockModal({ isOpen, onClose, product }) {
   useEffect(() => {
     if (isOpen && product) {
       setStock(product.stock.toString());
-      setLowStockThreshold(product.lowStockThreshold?.toString() || "");
+      setLowStockThreshold(product.lowStockThreshold?.toString() || "5");
       setError(null);
     }
   }, [isOpen, product]);
@@ -32,12 +32,16 @@ export default function UpdateStockModal({ isOpen, onClose, product }) {
       return;
     }
 
+    if (lowStockThreshold === undefined || lowStockThreshold === "" || isNaN(lowStockThreshold)) {
+      setError("Low stock threshold is required");
+      return;
+    }
+
     dispatch(
       updateInventoryStock({
         productId: product.id,
         stock: parseInt(stock, 10),
-        lowStockThreshold:
-          lowStockThreshold !== "" ? parseInt(lowStockThreshold, 10) : null,
+        lowStockThreshold: parseInt(lowStockThreshold, 10),
       })
     ).then((result) => {
       if (result.payload) {
@@ -115,6 +119,7 @@ export default function UpdateStockModal({ isOpen, onClose, product }) {
               onChange={(e) => setLowStockThreshold(e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-black"
               style={{ "--tw-ring-color": "var(--primary)" }}
+              required
             />
           </div>
 
@@ -143,7 +148,7 @@ export default function UpdateStockModal({ isOpen, onClose, product }) {
         isOpen={showSuccessModal}
         onClose={handleSuccessClose}
         title="Stock Updated Successfully"
-        message={`Stock quantity has been updated to ${stock} units${lowStockThreshold ? ` and low stock threshold to ${lowStockThreshold}.` : "."}`}
+        message={`Stock quantity updated to ${stock} units and threshold set to ${lowStockThreshold}.`}
         buttonText="Done"
       />
     </div>

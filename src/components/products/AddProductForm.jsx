@@ -78,7 +78,7 @@ export default function AddProductForm({ productId = null }) {
     subcategories: [],
     quantity: 0,
     minStock: 0,
-    trackStock: false,
+    trackStock: true,
     stockStatus: "in-stock",
     limitPurchases: false,
     enableReviews: true,
@@ -1105,7 +1105,7 @@ export default function AddProductForm({ productId = null }) {
             <div className="bg-white rounded-lg shadow-sm p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-900 mb-2">
-                  Ring Size
+                  Ring Size <span className="text-red-500">*</span>
                 </label>
                 <label className="flex items-center gap-1.5 cursor-pointer w-fit mb-2">
                   <input
