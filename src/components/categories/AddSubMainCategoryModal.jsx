@@ -4,87 +4,74 @@ import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { MdClose } from "react-icons/md";
 import {
-  createSubCategory,
-  updateSubCategory,
-  fetchSubCategories,
+  createSubMainCategory,
+  updateSubMainCategory,
+  fetchSubMainCategories,
 } from "@/store/slices/subCategoriesSlice";
 import SuccessModal from "@/components/modals/SuccessModal";
 import CustomDropdown from "@/components/common/CustomDropdown";
 
-export default function AddSubCategoryModal({ isOpen, onClose, subCategory }) {
+export default function AddSubMainCategoryModal({ isOpen, onClose, subMainCategory }) {
   const dispatch = useDispatch();
   const { categories } = useSelector((state) => state.categories);
-  const { subMainCategories } = useSelector((state) => state.subCategories);
-
-  const [subCategoryName, setSubCategoryName] = useState("");
+  const [subMainCategoryName, setSubMainCategoryName] = useState("");
   const [selectedCategoryId, setSelectedCategoryId] = useState("");
-  const [selectedSubMainCategoryId, setSelectedSubMainCategoryId] = useState("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
 
-  const filteredSubMainCategories = selectedCategoryId
-    ? subMainCategories.filter(
-        (subMain) => subMain.category_id === parseInt(selectedCategoryId)
-      )
-    : [];
-
   useEffect(() => {
-    if (isOpen && subCategory) {
-      setSubCategoryName(subCategory.name);
-      setSelectedSubMainCategoryId(subCategory.sub_main_category_id);
-      const subMainCat = subMainCategories.find(
-        (s) => s.id === subCategory.sub_main_category_id
-      );
-      if (subMainCat) {
-        setSelectedCategoryId(subMainCat.category_id);
-      }
+    if (isOpen && subMainCategory) {
+      setSubMainCategoryName(subMainCategory.name);
+      setSelectedCategoryId(subMainCategory.category_id);
     } else if (isOpen) {
-      setSubCategoryName("");
+      setSubMainCategoryName("");
       setSelectedCategoryId("");
-      setSelectedSubMainCategoryId("");
     }
-  }, [isOpen, subCategory, subMainCategories]);
+  }, [isOpen, subMainCategory]);
 
-  const handleSubCategoryNameChange = (e) => {
+  const handleNameChange = (e) => {
     let value = e.target.value;
     value = value.replace(/[^a-zA-Z\s]/g, "");
     if (value.length > 0) {
       value = value.charAt(0).toUpperCase() + value.slice(1);
     }
-    setSubCategoryName(value);
+    setSubMainCategoryName(value);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!subCategoryName.trim()) {
-      alert("Sub category name is required");
+    if (!subMainCategoryName.trim()) {
+      alert("Sub Main Category name is required");
       return;
     }
 
-    if (!selectedSubMainCategoryId) {
-      alert("Please select a sub main category");
+    if (!selectedCategoryId) {
+      alert("Please select a main category");
       return;
     }
 
-    const payload = {
-      name: subCategoryName.trim(),
-      subMainCategoryId: parseInt(selectedSubMainCategoryId),
-    };
-
-    if (subCategory) {
+    if (subMainCategory) {
       dispatch(
-        updateSubCategory({
-          id: subCategory.id,
-          subCategoryData: payload,
+        updateSubMainCategory({
+          id: subMainCategory.id,
+          subMainCategoryData: {
+            name: subMainCategoryName.trim(),
+            categoryId: selectedCategoryId,
+          },
         })
       ).then(() => {
-        setSuccessMessage(`${subCategoryName} has been updated.`);
+        setSuccessMessage(`${subMainCategoryName} has been updated.`);
         setShowSuccessModal(true);
       });
     } else {
-      dispatch(createSubCategory(payload)).then(() => {
-        setSuccessMessage(`${subCategoryName} has been added to sub categories.`);
+      dispatch(
+        createSubMainCategory({
+          name: subMainCategoryName.trim(),
+          categoryId: selectedCategoryId,
+        })
+      ).then(() => {
+        setSuccessMessage(`${subMainCategoryName} has been added to sub main categories.`);
         setShowSuccessModal(true);
       });
     }
@@ -93,7 +80,7 @@ export default function AddSubCategoryModal({ isOpen, onClose, subCategory }) {
   const handleSuccessClose = () => {
     setShowSuccessModal(false);
     onClose();
-    dispatch(fetchSubCategories());
+    dispatch(fetchSubMainCategories());
   };
 
   if (!isOpen) return null;
@@ -104,9 +91,10 @@ export default function AddSubCategoryModal({ isOpen, onClose, subCategory }) {
       style={{ backgroundColor: "rgba(0, 0, 0, 0.1)" }}
     >
       <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
+        {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-semibold text-gray-900">
-            {subCategory ? "Edit Sub Category" : "Add Sub Category"}
+            {subMainCategory ? "Edit Sub Main Category" : "Add Sub Main Category"}
           </h2>
           <button
             onClick={onClose}
@@ -116,34 +104,26 @@ export default function AddSubCategoryModal({ isOpen, onClose, subCategory }) {
           </button>
         </div>
 
+        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <CustomDropdown
             options={categories}
             value={selectedCategoryId}
             onChange={setSelectedCategoryId}
             label="Main Category"
-            placeholder="Select a category"
-            required
-          />
-
-          <CustomDropdown
-            options={filteredSubMainCategories}
-            value={selectedSubMainCategoryId}
-            onChange={setSelectedSubMainCategoryId}
-            label="Sub Main Category"
-            placeholder="Select a sub main category"
+            placeholder="Select a main category"
             required
           />
 
           <div>
             <label className="block text-sm font-medium text-gray-900 mb-2">
-              Sub Category Name <span className="text-red-500">*</span>
+              Sub Main Category Name <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
-              value={subCategoryName}
-              onChange={handleSubCategoryNameChange}
-              placeholder="Enter sub category name"
+              value={subMainCategoryName}
+              onChange={handleNameChange}
+              placeholder="Enter sub main category name"
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-black bg-white placeholder:text-gray-500"
               style={{ "--tw-ring-color": "var(--primary)" }}
               required
@@ -163,16 +143,17 @@ export default function AddSubCategoryModal({ isOpen, onClose, subCategory }) {
               style={{ backgroundColor: "var(--primary)" }}
               className="flex-1 px-5 py-2.5 text-white font-medium rounded-full hover:opacity-90 active:opacity-80 transition-all shadow-sm cursor-pointer"
             >
-              {subCategory ? "Update" : "Add"}
+              {subMainCategory ? "Update" : "Add"}
             </button>
           </div>
         </form>
       </div>
 
+      {/* Success Modal */}
       <SuccessModal
         isOpen={showSuccessModal}
         onClose={handleSuccessClose}
-        title={subCategory ? "Sub Category Updated Successfully" : "Sub Category Added Successfully"}
+        title={subMainCategory ? "Sub Main Category Updated Successfully" : "Sub Main Category Added Successfully"}
         message={successMessage}
         buttonText="Done"
       />

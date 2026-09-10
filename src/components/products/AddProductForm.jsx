@@ -13,7 +13,11 @@ import {
   fetchProducts,
 } from "@/store/slices/productsSlice";
 import { fetchCategories } from "@/store/slices/categoriesSlice";
-import { fetchSubCategoriesByCategory } from "@/store/slices/subCategoriesSlice";
+import {
+  fetchSubMainCategories,
+  fetchSubCategoriesByCategory,
+  fetchSubCategoriesBySubMainCategory
+} from "@/store/slices/subCategoriesSlice";
 import { fetchSymbols } from "@/store/slices/symbolsSlice";
 import CustomDropdown from "@/components/common/CustomDropdown";
 import { GrFormNextLink } from "react-icons/gr";
@@ -28,7 +32,7 @@ export default function AddProductForm({ productId = null }) {
   const dispatch = useDispatch();
   const { loading: submitting } = useSelector((state) => state.products);
   const { categories } = useSelector((state) => state.categories);
-  const { subCategories } = useSelector((state) => state.subCategories);
+  const { subMainCategories, subCategories } = useSelector((state) => state.subCategories);
   const { symbols } = useSelector((state) => state.symbols);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editProductId, setEditProductId] = useState(null);
@@ -49,10 +53,9 @@ export default function AddProductForm({ productId = null }) {
 
   const fontOptions = getFontOptions();
   const colorOptions = [
-    { name: "Gold", hex: "#FFD700" },
-    { name: "Silver", hex: "#C0C0C0" },
-    { name: "Yellow Gold", hex: "#FFC700" },
-    { name: "Platinum", hex: "#E8E8E8" },
+    { name: "Red", hex: "#FF0000" },
+    { name: "Black", hex: "#000000" },
+    { name: "Blue", hex: "#0000FF" },
   ];
   const symbolOptions = symbols.map((symbol) => ({
     name: symbol.name,
@@ -75,6 +78,7 @@ export default function AddProductForm({ productId = null }) {
     salePrice: "",
     sku: "",
     category: "",
+    subMainCategory: "",
     subcategories: [],
     quantity: 0,
     minStock: 0,
@@ -159,6 +163,9 @@ export default function AddProductForm({ productId = null }) {
           setIsEditMode(true);
           setEditProductId(product.id);
 
+          const subcategories = Array.isArray(product.subcategories) ? product.subcategories : [];
+          const subMainCategoryId = product.sub_main_category_id || "";
+
           setFormData({
             title: product.title || "",
             description: product.description || "",
@@ -166,8 +173,8 @@ export default function AddProductForm({ productId = null }) {
             salePrice: product.sale_price || "",
             sku: product.sku || "",
             category: product.category_id || "",
-            // API already returns subcategories in correct format: [{id, name}]
-            subcategories: Array.isArray(product.subcategories) ? product.subcategories : [],
+            subMainCategory: subMainCategoryId,
+            subcategories: subcategories,
             quantity: product.quantity || 0,
             minStock: product.min_stock || 0,
             trackStock: product.track_stock || false,
@@ -250,20 +257,24 @@ export default function AddProductForm({ productId = null }) {
     }
   }, [router]);
 
-  // Fetch sub categories when category changes
-  // Fetch subcategories when category changes OR on mount if editing with a category
   useEffect(() => {
     if (formData.category) {
+      dispatch(fetchSubMainCategories());
       dispatch(fetchSubCategoriesByCategory(formData.category));
+      if (!isEditMode) {
+        setFormData((prev) => ({ ...prev, subMainCategory: "", subcategories: [] }));
+      }
     }
-  }, [formData.category, dispatch]);
+  }, [formData.category, dispatch, isEditMode]);
 
-  // Ensure subcategories are fetched on mount for edit mode
   useEffect(() => {
-    if (isEditMode && formData.category && subCategories.length === 0) {
-      dispatch(fetchSubCategoriesByCategory(formData.category));
+    if (formData.subMainCategory) {
+      dispatch(fetchSubCategoriesBySubMainCategory(formData.subMainCategory));
+      if (!isEditMode) {
+        setFormData((prev) => ({ ...prev, subcategories: [] }));
+      }
     }
-  }, [isEditMode]);
+  }, [formData.subMainCategory, dispatch, isEditMode]);
 
 
   const tabs = [
@@ -437,6 +448,7 @@ export default function AddProductForm({ productId = null }) {
       submitData.append("salePrice", formData.salePrice);
       submitData.append("sku", formData.sku);
       submitData.append("categoryId", formData.category);
+      submitData.append("subMainCategoryId", formData.subMainCategory);
       submitData.append(
         "subcategories",
         JSON.stringify(
@@ -547,9 +559,9 @@ export default function AddProductForm({ productId = null }) {
 
   const handleSuccessModalClose = () => {
     setShowSuccessModal(false);
-    // Reload page to refresh all data and images
+    dispatch(fetchProducts());
     setTimeout(() => {
-      window.location.href = "/products";
+      router.push("/products");
     }, 300);
   };
 
@@ -695,36 +707,112 @@ export default function AddProductForm({ productId = null }) {
                 />
               </div>
 
-              {formData.category && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-2">
-                    Sub Category <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    value={formData.subcategories.length > 0 ? formData.subcategories[0].id : ""}
-                    onChange={(e) => {
-                      const selectedSubCat = subCategories.find(
-                        (s) => s.id === parseInt(e.target.value)
-                      );
-                      setFormData((prev) => ({
-                        ...prev,
-                        subcategories: selectedSubCat
-                          ? [{ id: selectedSubCat.id, name: selectedSubCat.name }]
-                          : [],
-                      }));
-                    }}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-black mb-4"
-                    style={{ "--tw-ring-color": "var(--primary)" }}
-                  >
-                    <option value="">Select a sub category</option>
-                    {subCategories.map((subCat) => (
-                      <option key={subCat.id} value={subCat.id}>
-                        {subCat.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
+              {formData.category && (() => {
+                const directSubCategories = subCategories.filter(
+                  (s) => s.category_id === parseInt(formData.category) && !s.sub_main_category_id
+                );
+                const relatedSubMainCategories = subMainCategories.filter(
+                  (sm) => sm.category_id === parseInt(formData.category)
+                );
+
+                const isEditingType3 = isEditMode && formData.subMainCategory;
+                const hasDirectSubCategories = directSubCategories.length > 0 && !isEditingType3;
+
+                if (hasDirectSubCategories) {
+                  return (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-900 mb-2">
+                        Sub Category <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        value={formData.subcategories.length > 0 ? formData.subcategories[0].id : ""}
+                        onChange={(e) => {
+                          const selectedSubCat = directSubCategories.find(
+                            (s) => s.id === parseInt(e.target.value)
+                          );
+                          setFormData((prev) => ({
+                            ...prev,
+                            subcategories: selectedSubCat
+                              ? [{ id: selectedSubCat.id, name: selectedSubCat.name }]
+                              : [],
+                          }));
+                        }}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-black mb-4"
+                        style={{ "--tw-ring-color": "var(--primary)" }}
+                      >
+                        <option value="">Select a sub category</option>
+                        {directSubCategories.map((subCat) => (
+                          <option key={subCat.id} value={subCat.id}>
+                            {subCat.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  );
+                } else if (relatedSubMainCategories.length > 0 || isEditMode) {
+                  return (
+                    <>
+                      <div>
+                        <CustomDropdown
+                          options={relatedSubMainCategories.length > 0 ? relatedSubMainCategories : subMainCategories}
+                          value={formData.subMainCategory}
+                          onChange={(value) =>
+                            setFormData((prev) => ({ ...prev, subMainCategory: value }))
+                          }
+                          label="Sub Main Category"
+                          placeholder="Select a sub main category"
+                          required
+                        />
+                      </div>
+
+                      {formData.subMainCategory && (() => {
+                        const filteredSubCategories = subCategories.filter(
+                          (s) => s.sub_main_category_id === parseInt(formData.subMainCategory)
+                        );
+                        const availableOptions = isEditMode
+                          ? formData.subcategories
+                          : filteredSubCategories;
+
+                        return availableOptions.length > 0 || filteredSubCategories.length > 0 ? (
+                          <div>
+                            <label className="block text-sm font-medium text-gray-900 mb-2">
+                              Sub Category <span className="text-red-500">*</span>
+                            </label>
+                            <select
+                              value={formData.subcategories.length > 0 ? formData.subcategories[0].id : ""}
+                              onChange={(e) => {
+                                const allOptions = isEditMode
+                                  ? formData.subcategories
+                                  : filteredSubCategories;
+                                const selectedSubCat = allOptions.find(
+                                  (s) => s.id === parseInt(e.target.value)
+                                );
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  subcategories: selectedSubCat
+                                    ? [{ id: selectedSubCat.id, name: selectedSubCat.name }]
+                                    : [],
+                                }));
+                              }}
+                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-black mb-4"
+                              style={{ "--tw-ring-color": "var(--primary)" }}
+                            >
+                              <option value="">Select a sub category</option>
+                              {availableOptions.map((subCat) => (
+                                <option key={subCat.id} value={subCat.id}>
+                                  {subCat.name}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        ) : null;
+                      })()}
+                    </>
+                  );
+                }
+
+                return null;
+              })()}
 
               <div className="grid grid-cols-2 gap-4">
                 <div>

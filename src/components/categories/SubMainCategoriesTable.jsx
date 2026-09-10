@@ -4,55 +4,53 @@ import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { MdEdit, MdDelete } from "react-icons/md";
 import {
-  fetchSubCategories,
   fetchSubMainCategories,
-  deleteSubCategory,
+  deleteSubMainCategory,
 } from "@/store/slices/subCategoriesSlice";
 import { fetchCategories } from "@/store/slices/categoriesSlice";
-import AddSubCategoryModal from "./AddSubCategoryModal";
+import AddSubMainCategoryModal from "./AddSubMainCategoryModal";
 import DeleteConfirmModal from "@/components/products/DeleteConfirmModal";
 import SuccessModal from "@/components/modals/SuccessModal";
 import SkeletonLoader from "@/components/common/SkeletonLoader";
 
-export default function SubCategoriesTable() {
+export default function SubMainCategoriesTable() {
   const dispatch = useDispatch();
-  const { subCategories, subMainCategories, loading } = useSelector((state) => state.subCategories);
+  const { subMainCategories, loading } = useSelector((state) => state.subCategories);
   const { categories } = useSelector((state) => state.categories);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedSubCategory, setSelectedSubCategory] = useState(null);
+  const [selectedSubMainCategory, setSelectedSubMainCategory] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [selectedSubCategoryForDelete, setSelectedSubCategoryForDelete] = useState(null);
+  const [selectedForDelete, setSelectedForDelete] = useState(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [deletedSubCategoryName, setDeletedSubCategoryName] = useState("");
+  const [deletedName, setDeletedName] = useState("");
 
   useEffect(() => {
-    dispatch(fetchSubCategories());
     dispatch(fetchSubMainCategories());
     if (categories.length === 0) {
       dispatch(fetchCategories());
     }
   }, [dispatch, categories.length]);
 
-  const handleEditClick = (subCategory) => {
-    setSelectedSubCategory(subCategory);
+  const handleEditClick = (subMainCategory) => {
+    setSelectedSubMainCategory(subMainCategory);
     setIsModalOpen(true);
   };
 
   const handleAddClick = () => {
-    setSelectedSubCategory(null);
+    setSelectedSubMainCategory(null);
     setIsModalOpen(true);
   };
 
-  const handleDeleteClick = (subCategory) => {
-    setSelectedSubCategoryForDelete(subCategory);
+  const handleDeleteClick = (subMainCategory) => {
+    setSelectedForDelete(subMainCategory);
     setShowDeleteModal(true);
   };
 
   const handleConfirmDelete = () => {
-    if (selectedSubCategoryForDelete) {
-      setDeletedSubCategoryName(selectedSubCategoryForDelete.name);
-      dispatch(deleteSubCategory(selectedSubCategoryForDelete.id)).then((result) => {
-        if (result.type === deleteSubCategory.fulfilled.type) {
+    if (selectedForDelete) {
+      setDeletedName(selectedForDelete.name);
+      dispatch(deleteSubMainCategory(selectedForDelete.id)).then((result) => {
+        if (result.type === deleteSubMainCategory.fulfilled.type) {
           setShowDeleteModal(false);
           setShowSuccessModal(true);
         }
@@ -62,27 +60,15 @@ export default function SubCategoriesTable() {
 
   const handleSuccessClose = () => {
     setShowSuccessModal(false);
-    setSelectedSubCategoryForDelete(null);
-    dispatch(fetchSubCategories());
+    setSelectedForDelete(null);
+    dispatch(fetchSubMainCategories());
   };
 
-  const getCategoryName = (subCategory) => {
-    // Type 2: Direct category_id
-    if (subCategory.category_id) {
-      return categories.find((cat) => cat.id === subCategory.category_id)?.name || "—";
-    }
-    // Type 1: Get category through sub_main_category_id
-    if (subCategory.sub_main_category_id) {
-      const subMainCat = subMainCategories.find((s) => s.id === subCategory.sub_main_category_id);
-      if (subMainCat) {
-        return categories.find((cat) => cat.id === subMainCat.category_id)?.name || "—";
-      }
-    }
-    return "—";
+  const getCategoryName = (categoryId) => {
+    return categories.find((cat) => cat.id === categoryId)?.name || "—";
   };
 
-  // Only show skeleton on initial load, not when switching data
-  const isInitialLoading = loading && subCategories.length === 0;
+  const isInitialLoading = loading && subMainCategories.length === 0;
 
   return (
     <>
@@ -92,13 +78,13 @@ export default function SubCategoriesTable() {
         <div className="bg-white rounded-lg shadow-sm">
           {/* Header with Add Button */}
           <div className="flex items-center justify-between p-6 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">All Sub Categories</h2>
+            <h2 className="text-lg font-semibold text-gray-900">All Sub Main Categories</h2>
             <button
               onClick={handleAddClick}
               style={{ backgroundColor: "var(--primary)" }}
               className="px-5 py-2.5 text-white font-medium rounded-full hover:opacity-90 active:opacity-80 transition-all shadow-sm cursor-pointer"
             >
-              + Add Sub Category
+              + Add Sub Main Category
             </button>
           </div>
 
@@ -110,7 +96,7 @@ export default function SubCategoriesTable() {
                   No.
                 </th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
-                  Sub Category Name
+                  Sub Main Category Name
                 </th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
                   Main Category
@@ -121,39 +107,39 @@ export default function SubCategoriesTable() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {subCategories.length === 0 ? (
+              {subMainCategories.length === 0 ? (
                 <tr>
                   <td colSpan="4" className="px-6 py-4 text-center text-gray-600">
-                    No sub categories found
+                    No sub main categories found
                   </td>
                 </tr>
               ) : (
-                subCategories.map((subCategory, index) => (
-                  <tr key={subCategory.id} className="hover:bg-gray-50 transition-colors">
+                subMainCategories.map((subMainCat, index) => (
+                  <tr key={subMainCat.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 text-sm font-medium text-gray-600 w-12">
                       {index + 1}
                     </td>
                     <td className="px-6 py-4">
-                      <p className="text-sm font-medium text-gray-900">{subCategory.name}</p>
+                      <p className="text-sm font-medium text-gray-900">{subMainCat.name}</p>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="px-3 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
-                        {getCategoryName(subCategory)}
+                      <span className="px-3 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+                        {getCategoryName(subMainCat.category_id)}
                       </span>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-center gap-2">
                         <button
-                          onClick={() => handleEditClick(subCategory)}
+                          onClick={() => handleEditClick(subMainCat)}
                           className="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                          title="Edit sub category"
+                          title="Edit sub main category"
                         >
                           <MdEdit size={18} />
                         </button>
                         <button
-                          onClick={() => handleDeleteClick(subCategory)}
+                          onClick={() => handleDeleteClick(subMainCat)}
                           className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors cursor-pointer"
-                          title="Delete sub category"
+                          title="Delete sub main category"
                         >
                           <MdDelete size={18} />
                         </button>
@@ -167,11 +153,11 @@ export default function SubCategoriesTable() {
         </div>
       )}
 
-      {/* Add Sub Category Modal */}
-      <AddSubCategoryModal
+      {/* Add Sub Main Category Modal */}
+      <AddSubMainCategoryModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        subCategory={selectedSubCategory}
+        subMainCategory={selectedSubMainCategory}
       />
 
       {/* Delete Confirmation Modal */}
@@ -179,15 +165,15 @@ export default function SubCategoriesTable() {
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
         onConfirm={handleConfirmDelete}
-        productName={selectedSubCategoryForDelete?.name}
+        productName={selectedForDelete?.name}
       />
 
       {/* Success Modal */}
       <SuccessModal
         isOpen={showSuccessModal}
         onClose={handleSuccessClose}
-        title="Sub Category Deleted Successfully"
-        message={`${deletedSubCategoryName} has been removed from sub categories.`}
+        title="Sub Main Category Deleted Successfully"
+        message={`${deletedName} has been removed from sub main categories.`}
         buttonText="Done"
       />
     </>

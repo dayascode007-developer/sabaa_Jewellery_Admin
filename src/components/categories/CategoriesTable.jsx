@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { MdEdit, MdDelete } from "react-icons/md";
 import { fetchCategories, deleteCategory } from "@/store/slices/categoriesSlice";
-import { fetchSubCategories } from "@/store/slices/subCategoriesSlice";
+import { fetchSubMainCategories, fetchSubCategories } from "@/store/slices/subCategoriesSlice";
 import AddCategoryModal from "./AddCategoryModal";
 import DeleteConfirmModal from "@/components/products/DeleteConfirmModal";
 import SuccessModal from "@/components/modals/SuccessModal";
@@ -13,7 +13,7 @@ import SkeletonLoader from "@/components/common/SkeletonLoader";
 export default function CategoriesTable() {
   const dispatch = useDispatch();
   const { categories, loading } = useSelector((state) => state.categories);
-  const { subCategories } = useSelector((state) => state.subCategories);
+  const { subMainCategories, subCategories } = useSelector((state) => state.subCategories);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -23,6 +23,7 @@ export default function CategoriesTable() {
 
   useEffect(() => {
     dispatch(fetchCategories());
+    dispatch(fetchSubMainCategories());
     dispatch(fetchSubCategories());
   }, [dispatch]);
 
@@ -90,7 +91,10 @@ export default function CategoriesTable() {
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
                   Category Name
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
+                <th className="px-6 py-4 text-center text-sm font-semibold text-gray-900">
+                  Sub Main Categories
+                </th>
+                <th className="px-6 py-4 text-center text-sm font-semibold text-gray-900">
                   Sub Categories
                 </th>
                 <th className="px-6 py-4 text-center text-sm font-semibold text-gray-900">
@@ -107,9 +111,13 @@ export default function CategoriesTable() {
                 </tr>
               ) : (
                 categories.map((category, index) => {
-                  const categorySubCategories = subCategories.filter(
-                    (sub) => sub.category_id === category.id
+                  const categorySubMainCategories = subMainCategories.filter(
+                    (sm) => sm.category_id === category.id
                   );
+                  const categoryDirectSubCategories = subCategories.filter(
+                    (sub) => sub.category_id === category.id && !sub.sub_main_category_id
+                  );
+
                   return (
                     <tr key={category.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-6 py-4 text-sm font-medium text-gray-600 w-12">
@@ -120,17 +128,50 @@ export default function CategoriesTable() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex flex-wrap gap-2">
-                          {categorySubCategories.length > 0 ? (
-                            categorySubCategories.map((sub) => (
+                          {categorySubMainCategories.length > 0 ? (
+                            categorySubMainCategories.map((subMain) => (
                               <span
-                                key={sub.id}
-                                className="px-3 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800"
+                                key={subMain.id}
+                                className="px-3 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800"
                               >
-                                {sub.name}
+                                {subMain.name}
                               </span>
                             ))
                           ) : (
-                            <p className="text-sm text-gray-400">No sub categories</p>
+                            <p className="text-sm text-gray-400">—</p>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex flex-wrap gap-2">
+                          {categoryDirectSubCategories.length > 0 || categorySubMainCategories.length > 0 ? (
+                            <>
+                              {categoryDirectSubCategories.length > 0 && (
+                                categoryDirectSubCategories.map((sub) => (
+                                  <span
+                                    key={sub.id}
+                                    className="px-3 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800"
+                                  >
+                                    {sub.name}
+                                  </span>
+                                ))
+                              )}
+                              {categorySubMainCategories.map((subMain) => {
+                                const subMainSubCategories = subCategories.filter(
+                                  (sub) => sub.sub_main_category_id === subMain.id
+                                );
+                                return subMainSubCategories.map((sub) => (
+                                  <span
+                                    key={sub.id}
+                                    className="px-3 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800"
+                                  >
+                                    {sub.name}
+                                  </span>
+                                ));
+                              })}
+                            </>
+                          ) : (
+                            <p className="text-sm text-gray-400">—</p>
                           )}
                         </div>
                       </td>

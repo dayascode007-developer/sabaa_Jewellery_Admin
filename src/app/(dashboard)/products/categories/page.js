@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import CategoriesTable from "@/components/categories/CategoriesTable";
+import SubMainCategoriesTable from "@/components/categories/SubMainCategoriesTable";
 import SubCategoriesTable from "@/components/categories/SubCategoriesTable";
 
 export default function Categories() {
@@ -28,6 +29,16 @@ export default function Categories() {
           Categories
         </button>
         <button
+          onClick={() => setActiveTab("submaincategories")}
+          className={`px-4 py-2 font-medium border-b-2 transition-colors ${
+            activeTab === "submaincategories"
+              ? "border-gray-900 text-gray-900"
+              : "border-transparent text-gray-600 hover:text-gray-900"
+          }`}
+        >
+          Sub Main Categories
+        </button>
+        <button
           onClick={() => setActiveTab("subcategories")}
           className={`px-4 py-2 font-medium border-b-2 transition-colors ${
             activeTab === "subcategories"
@@ -41,6 +52,9 @@ export default function Categories() {
 
       {/* Categories Table */}
       {activeTab === "categories" && <CategoriesTable />}
+
+      {/* Sub Main Categories Table */}
+      {activeTab === "submaincategories" && <SubMainCategoriesTable />}
 
       {/* Sub Categories Table */}
       {activeTab === "subcategories" && <SubCategoriesTable />}
