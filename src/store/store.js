@@ -1,6 +1,5 @@
 import { configureStore } from "@reduxjs/toolkit";
 import adminAuthReducer from "./slices/adminAuthSlice";
-import bannersReducer from "./slices/bannersSlice";
 import categoriesReducer from "./slices/categoriesSlice";
 import subCategoriesReducer from "./slices/subCategoriesSlice";
 import productsReducer from "./slices/productsSlice";
@@ -20,7 +19,6 @@ export const makeStore = () =>
   configureStore({
     reducer: {
       adminAuth: adminAuthReducer,
-      banners: bannersReducer,
       categories: categoriesReducer,
       subCategories: subCategoriesReducer,
       products: productsReducer,

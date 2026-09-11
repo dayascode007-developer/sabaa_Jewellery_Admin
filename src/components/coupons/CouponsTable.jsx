@@ -67,9 +67,7 @@ export default function CouponsTable({ coupons, onEdit, onDelete, startIndex = 0
                 </td>
                 <td className="px-6 py-4">
                   <p className="text-gray-700">
-                    {new Date(
-                      coupon.expiryDate || coupon.expiry_date
-                    ).toLocaleDateString()}
+                    {new Date(coupon.expiryDate || coupon.expiry_date).toLocaleDateString('en-GB')}
                   </p>
                 </td>
                 <td className="px-6 py-4">
