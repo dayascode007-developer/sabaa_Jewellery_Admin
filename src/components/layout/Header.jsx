@@ -11,6 +11,7 @@ import { navigationItems } from "@/config/navigation";
 import UserDropdown from "@/components/common/UserDropdown";
 import NotificationModal from "@/components/common/NotificationModal";
 import { fetchAdminDetails } from "@/store/slices/adminAuthSlice";
+import { fetchUnreadCount } from "@/store/slices/adminNotificationsSlice";
 
 export default function Header({ isCollapsed, pathname }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -19,6 +20,7 @@ export default function Header({ isCollapsed, pathname }) {
   const searchParams = useSearchParams();
   const dispatch = useDispatch();
   const { admin, token, isHydrated } = useSelector((state) => state.adminAuth);
+  const { unreadCount } = useSelector((state) => state.adminNotifications);
 
   // Fetch admin details
   useEffect(() => {
@@ -26,6 +28,20 @@ export default function Header({ isCollapsed, pathname }) {
       dispatch(fetchAdminDetails(token));
     }
   }, [token, isHydrated, dispatch]);
+
+  // Fetch unread notification count
+  useEffect(() => {
+    if (token && isHydrated) {
+      dispatch(fetchUnreadCount());
+    }
+  }, [token, isHydrated, dispatch]);
+
+  // Refresh unread count when notification modal closes
+  useEffect(() => {
+    if (!isNotificationOpen && token) {
+      dispatch(fetchUnreadCount());
+    }
+  }, [isNotificationOpen, token, dispatch]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -87,12 +103,14 @@ export default function Header({ isCollapsed, pathname }) {
           className="relative p-2 border border-gray-300 hover:border-gray-400 rounded-full text-gray-600 hover:text-gray-900 transition-colors cursor-pointer"
         >
           <IoIosNotificationsOutline className="w-6 h-6" />
-          <span
-            className="absolute -top-2 -right-1 w-5 h-5 flex items-center justify-center text-xs text-white font-bold rounded-full"
-            style={{ backgroundColor: "var(--primary)" }}
-          >
-            3
-          </span>
+          {unreadCount > 0 && (
+            <span
+              className="absolute -top-2 -right-1 w-5 h-5 flex items-center justify-center text-xs text-white font-bold rounded-full"
+              style={{ backgroundColor: "var(--primary)" }}
+            >
+              {unreadCount > 99 ? "99+" : unreadCount}
+            </span>
+          )}
         </button>
         <div
           ref={dropdownRef}

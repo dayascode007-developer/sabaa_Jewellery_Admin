@@ -1,7 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { MdClose, MdShoppingCart, MdCheckCircle, MdLocalShipping } from "react-icons/md";
+import { useRouter } from "next/navigation";
+import { useDispatch, useSelector } from "react-redux";
+import { MdClose, MdShoppingCart, MdCheckCircle, MdLocalShipping, MdError, MdInfo } from "react-icons/md";
+import { fetchNotifications, markNotificationAsRead, deleteNotification as deleteNotif } from "@/store/slices/adminNotificationsSlice";
+import { formatDistanceToNow } from "date-fns";
 
 const styles = `
   @keyframes fadeIn {
@@ -49,54 +53,57 @@ const styles = `
   .notification-item:nth-child(n+4) { animation-delay: 0.2s; }
 `;
 
-const mockNotifications = [
-  {
-    id: 1,
-    type: "new_order",
-    title: "New Order #ORD-001",
-    description: "Stylish I initial Panchaloga Ring - Quantity: 2",
-    timestamp: "2 mins ago",
-    icon: MdShoppingCart,
-    iconBg: "bg-blue-100",
-    iconColor: "text-blue-600",
-  },
-  {
-    id: 2,
-    type: "payment_received",
-    title: "Payment Received",
-    description: "Order #ORD-001 - ₹45,999 payment confirmed",
-    timestamp: "1 min ago",
-    icon: MdCheckCircle,
-    iconBg: "bg-green-100",
-    iconColor: "text-green-600",
-  },
-  {
-    id: 3,
-    type: "shipped",
-    title: "Order Shipped",
-    description: "Order #ORD-001 - Tracking: TRK123456789",
-    timestamp: "Just now",
-    icon: MdLocalShipping,
-    iconBg: "bg-purple-100",
-    iconColor: "text-purple-600",
-  },
-  {
-    id: 4,
-    type: "new_order",
-    title: "New Order #ORD-002",
-    description: "Elegant Gold Necklace - Quantity: 1",
-    timestamp: "5 mins ago",
-    icon: MdShoppingCart,
-    iconBg: "bg-blue-100",
-    iconColor: "text-blue-600",
-  },
-];
+const getNotificationIcon = (type) => {
+  const iconMap = {
+    order_placed: { icon: MdShoppingCart, bg: "bg-blue-100", color: "text-blue-600" },
+    payment_received: { icon: MdCheckCircle, bg: "bg-green-100", color: "text-green-600" },
+    order_shipped: { icon: MdLocalShipping, bg: "bg-purple-100", color: "text-purple-600" },
+    order_delivered: { icon: MdCheckCircle, bg: "bg-green-100", color: "text-green-600" },
+    payment_failed: { icon: MdError, bg: "bg-red-100", color: "text-red-600" },
+  };
+  return iconMap[type] || { icon: MdInfo, bg: "bg-gray-100", color: "text-gray-600" };
+};
+
+const formatTime = (timestamp) => {
+  if (!timestamp) return "just now";
+  const date = new Date(timestamp);
+  return formatDistanceToNow(date, { addSuffix: true });
+};
 
 export default function NotificationModal({ isOpen, onClose }) {
-  const [notifications, setNotifications] = useState(mockNotifications);
+  const router = useRouter();
+  const dispatch = useDispatch();
+  const { list: notifications, loading } = useSelector((state) => state.adminNotifications);
   const [showAll, setShowAll] = useState(false);
   const initialLimit = 3;
   const displayedNotifications = showAll ? notifications : notifications.slice(0, initialLimit);
+
+  useEffect(() => {
+    if (isOpen) {
+      dispatch(fetchNotifications({ page: 1, limit: 50 }));
+    }
+  }, [isOpen, dispatch]);
+
+  const handleNotificationClick = (notification) => {
+    // Mark as read
+    if (!notification.is_read) {
+      dispatch(markNotificationAsRead(notification.id));
+    }
+
+    // Navigate to orders page
+    onClose();
+    router.push(`/orders`);
+  };
+
+  const handleMarkAsRead = (notificationId, e) => {
+    e?.stopPropagation();
+    dispatch(markNotificationAsRead(notificationId));
+  };
+
+  const handleDelete = (notificationId, e) => {
+    e?.stopPropagation();
+    dispatch(deleteNotif(notificationId));
+  };
 
   if (!isOpen) return null;
 
@@ -118,28 +125,55 @@ export default function NotificationModal({ isOpen, onClose }) {
 
         {/* Notifications List */}
         <div className="flex-1 overflow-y-auto space-y-2 p-4">
-          {displayedNotifications.length > 0 ? (
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-12 text-gray-500">
+              <p className="text-sm">Loading notifications...</p>
+            </div>
+          ) : displayedNotifications.length > 0 ? (
             displayedNotifications.map((notification) => {
-              const Icon = notification.icon;
+              const { icon: Icon, bg, color } = getNotificationIcon(notification.type);
               return (
                 <div
                   key={notification.id}
-                  className="notification-item p-4 bg-gray-50 rounded-xl border border-gray-200 hover:bg-gray-100 hover:shadow-md transition-all cursor-pointer group"
+                  onClick={() => handleNotificationClick(notification)}
+                  className={`notification-item p-4 rounded-xl border transition-all cursor-pointer group ${
+                    notification.is_read
+                      ? "bg-gray-50 border-gray-200 hover:bg-gray-100"
+                      : "bg-blue-50 border-blue-200 hover:bg-blue-100"
+                  }`}
                 >
                   <div className="flex items-start gap-3">
-                    <div className={`p-2 ${notification.iconBg} rounded-lg flex-shrink-0 group-hover:scale-110 transition-transform`}>
-                      <Icon size={20} className={notification.iconColor} />
+                    <div className={`p-2 ${bg} rounded-lg flex-shrink-0 group-hover:scale-110 transition-transform`}>
+                      <Icon size={20} className={color} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-gray-900 truncate">
                         {notification.title}
                       </p>
                       <p className="text-xs text-gray-600 mt-1 line-clamp-2">
-                        {notification.description}
+                        {notification.message}
                       </p>
                       <p className="text-xs text-gray-500 mt-2">
-                        {notification.timestamp}
+                        {formatTime(notification.created_at)}
                       </p>
+                    </div>
+                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {!notification.is_read && (
+                        <button
+                          onClick={(e) => handleMarkAsRead(notification.id, e)}
+                          className="p-1 hover:bg-gray-200 rounded transition-colors"
+                          title="Mark as read"
+                        >
+                          <MdCheckCircle size={16} className="text-gray-500" />
+                        </button>
+                      )}
+                      <button
+                        onClick={(e) => handleDelete(notification.id, e)}
+                        className="p-1 hover:bg-red-200 rounded transition-colors"
+                        title="Delete"
+                      >
+                        <MdClose size={16} className="text-red-500" />
+                      </button>
                     </div>
                   </div>
                 </div>

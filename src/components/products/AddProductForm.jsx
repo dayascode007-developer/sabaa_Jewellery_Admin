@@ -100,6 +100,7 @@ export default function AddProductForm({ productId = null }) {
     usageColorGuarantee: "",
     returnExchangePolicy: "",
     addressContact: "",
+    isPhotoRing: false,
   });
 
   const [mainImage, setMainImage] = useState(null);
@@ -195,6 +196,7 @@ export default function AddProductForm({ productId = null }) {
             usageColorGuarantee: product.usage_color_guarantee || "",
             returnExchangePolicy: product.return_exchange_policy || "",
             addressContact: product.address_contact || "",
+            isPhotoRing: product.is_photo_ring || false,
           });
 
           setMainImage(product.main_image || null);
@@ -463,6 +465,7 @@ export default function AddProductForm({ productId = null }) {
       submitData.append("stockStatus", formData.stockStatus);
       submitData.append("limitPurchases", formData.limitPurchases);
       submitData.append("enableReviews", formData.enableReviews);
+      submitData.append("isPhotoRing", formData.isPhotoRing);
       submitData.append("weight", formData.weight);
       submitData.append("length", formData.length);
       submitData.append("width", formData.width);
@@ -1260,6 +1263,26 @@ export default function AddProductForm({ productId = null }) {
                     )
                   )}
                 </div>
+              </div>
+
+              <div>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.isPhotoRing}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        isPhotoRing: e.target.checked,
+                      }))
+                    }
+                    className="w-4 h-4 rounded border-gray-300 cursor-pointer"
+                    style={{ accentColor: "var(--primary)" }}
+                  />
+                  <span className="text-sm font-medium text-gray-900">
+                    Photo Ring Product (Real Photo Ring)
+                  </span>
+                </label>
               </div>
 
               <div>

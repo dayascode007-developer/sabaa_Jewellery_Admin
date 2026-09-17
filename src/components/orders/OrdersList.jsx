@@ -13,10 +13,13 @@ import {
 import { PiMicrosoftExcelLogoLight } from "react-icons/pi";
 
 import * as XLSX from "xlsx";
+import { importOrdersExcel } from "@/store/slices/bulkOrdersSlice";
+import { getStatusCountsApi } from "@/store/api/admOrdersApi";
 import SkeletonLoader from "@/components/common/SkeletonLoader";
 import AdvancedSearchFilter from "./AdvancedSearchFilter";
 import OrderDetailsModal from "./OrderDetailsModal";
 import BulkOperationsModal from "./BulkOperationsModal";
+import SuccessModal from "@/components/modals/SuccessModal";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -61,21 +64,49 @@ export default function OrdersList() {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [activeStatusFilter, setActiveStatusFilter] = useState("all");
   const [bulkOperationsOpen, setBulkOperationsOpen] = useState(false);
+  const [successModal, setSuccessModal] = useState({ isOpen: false, updatedCount: 0 });
+  const [selectedRecords, setSelectedRecords] = useState(new Set());
+  const [isExporting, setIsExporting] = useState(false);
+  const [statusCounts, setStatusCounts] = useState({
+    all: 0,
+    pending: 0,
+    confirmed: 0,
+    processing: 0,
+    shipped: 0,
+    out_for_delivery: 0,
+    delivered: 0,
+    cancelled: 0,
+    returned: 0,
+    refunded: 0,
+  });
+
+  // Fetch status counts
+  const fetchStatusCounts = async () => {
+    try {
+      const data = await getStatusCountsApi();
+      setStatusCounts({
+        all: data.total || 0,
+        pending: data.counts.pending || 0,
+        confirmed: data.counts.confirmed || 0,
+        processing: data.counts.processing || 0,
+        shipped: data.counts.shipped || 0,
+        out_for_delivery: data.counts.out_for_delivery || 0,
+        delivered: data.counts.delivered || 0,
+        cancelled: data.counts.cancelled || 0,
+        returned: data.counts.returned || 0,
+        refunded: data.counts.refunded || 0,
+      });
+    } catch (error) {
+      console.error("Failed to fetch status counts:", error);
+    }
+  };
 
   // Fetch orders on mount and when filters/pagination changes
   useEffect(() => {
     const offset = (currentPage - 1) * ITEMS_PER_PAGE;
     dispatch(fetchOrders({ limit: ITEMS_PER_PAGE, offset, filters }));
+    fetchStatusCounts();
   }, [dispatch, currentPage, filters]);
-
-  // Calculate status counts from API response
-  const statusCounts = {
-    all: pagination.total || 0,
-    pending: 0,
-    shipped: 0,
-    out_for_delivery: 0,
-    delivered: 0,
-  };
 
   const formatCurrency = (amount) => {
     return `₹${amount.toFixed(2)}`;
@@ -90,9 +121,56 @@ export default function OrdersList() {
     });
   };
 
-  const handleDownloadExcel = () => {
+  // Handle individual checkbox
+  const handleCheckboxChange = (orderId) => {
+    const newSelected = new Set(selectedRecords);
+    if (newSelected.has(orderId)) {
+      newSelected.delete(orderId);
+    } else {
+      newSelected.add(orderId);
+    }
+    setSelectedRecords(newSelected);
+  };
+
+  // Handle Select All (page-wise)
+  const handleSelectAll = (checked) => {
+    const newSelected = new Set(selectedRecords);
+    if (checked) {
+      orders.forEach((order) => newSelected.add(order.id));
+    } else {
+      orders.forEach((order) => newSelected.delete(order.id));
+    }
+    setSelectedRecords(newSelected);
+  };
+
+  // Check if all current page items are selected
+  const isPageAllSelected = orders.length > 0 && orders.every((order) => selectedRecords.has(order.id));
+
+  // Smart Excel export with selection support
+  const handleDownloadExcel = async () => {
+    setIsExporting(true);
     try {
-      const exportData = orders.map((order) => ({
+      let ordersToExport = [];
+
+      // Priority logic: if records selected, export only those; else export all filtered records
+      if (selectedRecords.size > 0) {
+        // Export only selected records
+        ordersToExport = orders.filter((order) => selectedRecords.has(order.id));
+      } else {
+        // Export ALL filtered records (fetch complete dataset)
+        const allOrdersResult = await dispatch(
+          fetchOrders({ limit: 10000, offset: 0, filters }) // Large limit to get all
+        );
+        ordersToExport = allOrdersResult.payload?.data || orders;
+      }
+
+      if (ordersToExport.length === 0) {
+        alert("No orders to export");
+        setIsExporting(false);
+        return;
+      }
+
+      const exportData = ordersToExport.map((order) => ({
         "Order ID": order.id,
         "Purchase ID": order.purchase_id,
         "Customer Name": order.customer.name,
@@ -111,6 +189,31 @@ export default function OrdersList() {
     } catch (error) {
       console.error("Download error:", error);
       alert("Failed to download orders");
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleImportExcel = async (file) => {
+    try {
+      const result = await dispatch(importOrdersExcel(file));
+      if (result.payload) {
+        // Show success modal immediately
+        setSuccessModal({
+          isOpen: true,
+          updatedCount: result.payload.updatedCount,
+        });
+
+        // Refresh orders list and status counts
+        const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+        dispatch(fetchOrders({ limit: ITEMS_PER_PAGE, offset, filters }));
+        fetchStatusCounts();
+      } else if (result.payload === undefined && result.error) {
+        alert(`❌ Import failed: ${result.error.message}`);
+      }
+    } catch (error) {
+      console.error("Import error:", error);
+      alert("Failed to import orders");
     }
   };
 
@@ -299,7 +402,15 @@ export default function OrdersList() {
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 w-12">
-                    <input type="checkbox" className="rounded" />
+                    <input
+                      type="checkbox"
+                      className="rounded"
+                      checked={isPageAllSelected}
+                      onChange={(e) => handleSelectAll(e.target.checked)}
+                    />
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 w-12">
+                    No.
                   </th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
                     Order
@@ -328,20 +439,28 @@ export default function OrdersList() {
                 {filteredOrders.length === 0 ? (
                   <tr>
                     <td
-                      colSpan="8"
+                      colSpan="9"
                       className="px-6 py-8 text-center text-gray-600"
                     >
                       {loading ? "Loading orders..." : "No orders found"}
                     </td>
                   </tr>
                 ) : (
-                  filteredOrders.map((order) => (
+                  filteredOrders.map((order, index) => (
                     <tr
                       key={order.purchase_id}
-                      className="hover:bg-gray-50 transition-colors cursor-pointer"
+                      className="hover:bg-gray-50 transition-colors"
                     >
-                      <td className="px-6 py-4 w-12">
-                        <input type="checkbox" className="rounded" />
+                      <td className="px-6 py-4 w-12" onClick={(e) => e.stopPropagation()}>
+                        <input
+                          type="checkbox"
+                          className="rounded cursor-pointer"
+                          checked={selectedRecords.has(order.id)}
+                          onChange={() => handleCheckboxChange(order.id)}
+                        />
+                      </td>
+                      <td className="px-6 py-4 w-12 text-sm text-gray-600 font-medium">
+                        {pagination.offset + index + 1}
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2 mb-1">
@@ -417,9 +536,18 @@ export default function OrdersList() {
             isOpen={bulkOperationsOpen}
             onClose={() => setBulkOperationsOpen(false)}
             onExport={handleDownloadExcel}
-            onUpdate={() => {
-              // TODO: Add bulk update functionality
-            }}
+            onUpdate={handleImportExcel}
+            isExporting={isExporting}
+            selectedCount={selectedRecords.size}
+          />
+
+          {/* Success Modal */}
+          <SuccessModal
+            isOpen={successModal.isOpen}
+            onClose={() => setSuccessModal({ isOpen: false, updatedCount: 0 })}
+            title="Orders Updated Successfully"
+            message={`Successfully updated ${successModal.updatedCount} order(s)`}
+            buttonText="Done"
           />
         </>
       )}

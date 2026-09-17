@@ -1,11 +1,11 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://192.168.29.163:5000";
 
 const getToken = () => {
   if (typeof window === "undefined") return null;
   return localStorage.getItem("adminToken");
 };
 
-export const getOrdersApi = async (limit = 10, offset = 0, filters = {}) => {
+export const getNotificationsApi = async (page = 1, limit = 20, filters = {}) => {
   const token = getToken();
 
   if (!token) {
@@ -13,30 +13,18 @@ export const getOrdersApi = async (limit = 10, offset = 0, filters = {}) => {
   }
 
   const params = new URLSearchParams({
+    page,
     limit,
-    offset,
   });
 
-  if (filters.status) {
-    params.append("status", filters.status);
+  if (filters.unread !== undefined) {
+    params.append("unread", filters.unread);
   }
-  if (filters.paymentStatus) {
-    params.append("paymentStatus", filters.paymentStatus);
-  }
-  if (filters.customerId) {
-    params.append("customerId", filters.customerId);
-  }
-  if (filters.from) {
-    params.append("from", filters.from);
-  }
-  if (filters.to) {
-    params.append("to", filters.to);
-  }
-  if (filters.search) {
-    params.append("search", filters.search);
+  if (filters.type) {
+    params.append("type", filters.type);
   }
 
-  const response = await fetch(`${API_URL}/api/admin/orders?${params.toString()}`, {
+  const response = await fetch(`${API_URL}/api/admin/notifications?${params.toString()}`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -46,45 +34,21 @@ export const getOrdersApi = async (limit = 10, offset = 0, filters = {}) => {
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.message || "Failed to fetch orders");
-  }
-
-  const data = await response.json();
-  return data;
-};
-
-export const getOrderStatsApi = async () => {
-  const token = getToken();
-
-  if (!token) {
-    throw new Error("Authentication required. Please login first.");
-  }
-
-  const response = await fetch(`${API_URL}/api/admin/orders/stats`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to fetch order stats");
+    throw new Error(error.message || "Failed to fetch notifications");
   }
 
   const data = await response.json();
   return data.data;
 };
 
-export const getOrderDetailsApi = async (orderId) => {
+export const getUnreadCountApi = async () => {
   const token = getToken();
 
   if (!token) {
     throw new Error("Authentication required. Please login first.");
   }
 
-  const response = await fetch(`${API_URL}/api/admin/orders/${orderId}`, {
+  const response = await fetch(`${API_URL}/api/admin/notifications/unread/count`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -94,22 +58,22 @@ export const getOrderDetailsApi = async (orderId) => {
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.message || "Failed to fetch order details");
+    throw new Error(error.message || "Failed to fetch unread count");
   }
 
   const data = await response.json();
   return data.data;
 };
 
-export const getOrderOptionsApi = async () => {
+export const markAsReadApi = async (notificationId) => {
   const token = getToken();
 
   if (!token) {
     throw new Error("Authentication required. Please login first.");
   }
 
-  const response = await fetch(`${API_URL}/api/admin/orders/options`, {
-    method: "GET",
+  const response = await fetch(`${API_URL}/api/admin/notifications/${notificationId}/read`, {
+    method: "PUT",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
@@ -118,22 +82,22 @@ export const getOrderOptionsApi = async () => {
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.message || "Failed to fetch order options");
+    throw new Error(error.message || "Failed to mark notification as read");
   }
 
   const data = await response.json();
   return data.data;
 };
 
-export const getStatusCountsApi = async () => {
+export const markAllAsReadApi = async () => {
   const token = getToken();
 
   if (!token) {
     throw new Error("Authentication required. Please login first.");
   }
 
-  const response = await fetch(`${API_URL}/api/admin/orders/status-counts`, {
-    method: "GET",
+  const response = await fetch(`${API_URL}/api/admin/notifications/read/all`, {
+    method: "PUT",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
@@ -142,7 +106,31 @@ export const getStatusCountsApi = async () => {
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.message || "Failed to fetch status counts");
+    throw new Error(error.message || "Failed to mark all as read");
+  }
+
+  const data = await response.json();
+  return data.data;
+};
+
+export const deleteNotificationApi = async (notificationId) => {
+  const token = getToken();
+
+  if (!token) {
+    throw new Error("Authentication required. Please login first.");
+  }
+
+  const response = await fetch(`${API_URL}/api/admin/notifications/${notificationId}`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || "Failed to delete notification");
   }
 
   const data = await response.json();

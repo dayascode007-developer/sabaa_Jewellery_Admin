@@ -9,14 +9,16 @@ export default function BulkOperationsModal({
   onClose,
   onExport,
   onUpdate,
+  isExporting = false,
+  selectedCount = 0,
 }) {
   const [selectedFile, setSelectedFile] = useState(null);
   const fileInputRef = useRef(null);
 
   if (!isOpen) return null;
 
-  const handleExport = () => {
-    onExport();
+  const handleExport = async () => {
+    await onExport();
     onClose();
   };
 
@@ -60,9 +62,21 @@ export default function BulkOperationsModal({
         </div>
 
         {/* Description */}
-        <p className="text-sm text-gray-600 mb-6">
-          Download order data as Excel file.
-        </p>
+        <div className="mb-6">
+          <p className="text-sm text-gray-600">
+            Download order data as Excel file.
+          </p>
+          {selectedCount > 0 && (
+            <p className="text-sm text-blue-600 font-medium mt-2">
+              📋 {selectedCount} order(s) selected - will export only these
+            </p>
+          )}
+          {selectedCount === 0 && (
+            <p className="text-sm text-gray-500 mt-2">
+              No selection - will export all filtered records
+            </p>
+          )}
+        </div>
 
         {/* Hidden File Input */}
         <input
@@ -95,10 +109,24 @@ export default function BulkOperationsModal({
         <div className="flex gap-3">
           <button
             onClick={handleExport}
-            className="flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-full border border-gray-300 text-gray-900 font-medium hover:bg-gray-50 transition-all cursor-pointer"
+            disabled={isExporting}
+            className={`flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-full border border-gray-300 font-medium transition-all ${
+              isExporting
+                ? "text-gray-400 opacity-50 cursor-not-allowed"
+                : "text-gray-900 hover:bg-gray-50 cursor-pointer"
+            }`}
           >
-            <MdFileDownload size={18} />
-            <span>Export</span>
+            {isExporting ? (
+              <>
+                <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+                <span>Exporting...</span>
+              </>
+            ) : (
+              <>
+                <MdFileDownload size={18} />
+                <span>Export</span>
+              </>
+            )}
           </button>
           <button
             onClick={handleUpdate}
