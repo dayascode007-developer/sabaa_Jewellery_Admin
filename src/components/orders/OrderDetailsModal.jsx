@@ -15,45 +15,6 @@ const getStatusColor = (status) => {
 };
 
 export default function OrderDetailsModal({ order, onClose }) {
-  const mockOrderDetails = {
-    ...order,
-    billingDetails: {
-      name: "Venkat Esan",
-      address: "Venkateshanaa Rathinasabapathy, 90/22 mariamman koil street, thirupadilyur",
-      city: "Cuddalore",
-      zip: "607002",
-      state: "Tamil Nadu",
-      email: "nakshathinternationalgg@gmail.com",
-      phone: "+919994312242",
-    },
-    shippingDetails: {
-      name: "Venkat Esan",
-      address: "Venkateshanaaa rathinasabapathy, 90/22 mariamman koil street, thirupadilyur",
-      city: "Cuddalore",
-      zip: "607002",
-      state: "Tamil Nadu",
-    },
-    shippingMethod: "Flat rate",
-    paymentMethod: "UPI (103366225719)",
-    items: [
-      {
-        id: 1,
-        name: "Couple Name Panchalogam Ring LR103 LR103",
-        quantity: 1,
-        tax: "₹0.00",
-        total: "₹1,270.00",
-        details: {
-          "_field_2: ": "Ram",
-          "_field_18: ": "S1",
-          "_field_3: ": "F1",
-          "Ring Name : ": "Ram",
-          ": ": "S1",
-          "Font Style: ": "F1",
-          "Select ring size: ": "20",
-        },
-      },
-    ],
-  };
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -62,7 +23,7 @@ export default function OrderDetailsModal({ order, onClose }) {
         <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <h2 className="text-xl font-semibold text-gray-900">
-              Order {order.orderNumber}
+              {order.purchase_id}
             </h2>
             <span className={`px-3 py-1 text-xs font-semibold rounded-full ${getStatusColor(order.status)}`}>
               {order.status}
@@ -83,36 +44,32 @@ export default function OrderDetailsModal({ order, onClose }) {
             {/* Billing Details */}
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Billing details
+                Customer Details
               </h3>
               <div className="space-y-1 text-sm text-gray-700">
-                <p className="font-medium">{mockOrderDetails.billingDetails.name}</p>
-                <p>{mockOrderDetails.billingDetails.address}</p>
-                <p>
-                  {mockOrderDetails.billingDetails.city}{" "}
-                  {mockOrderDetails.billingDetails.zip}
-                </p>
-                <p>{mockOrderDetails.billingDetails.state}</p>
+                <p className="font-medium">{order.customer?.name}</p>
+                <p>{order.customer?.email}</p>
+                <p>{order.customer?.mobile}</p>
               </div>
               <div className="mt-4 space-y-2 text-sm">
                 <p>
                   <span className="font-semibold text-gray-900">Email</span>
                   <br />
                   <a
-                    href={`mailto:${mockOrderDetails.billingDetails.email}`}
+                    href={`mailto:${order.customer?.email}`}
                     className="text-blue-600 hover:underline"
                   >
-                    {mockOrderDetails.billingDetails.email}
+                    {order.customer?.email || "—"}
                   </a>
                 </p>
                 <p>
                   <span className="font-semibold text-gray-900">Phone</span>
                   <br />
                   <a
-                    href={`tel:${mockOrderDetails.billingDetails.phone}`}
+                    href={`tel:${order.customer?.mobile}`}
                     className="text-blue-600 hover:underline"
                   >
-                    {mockOrderDetails.billingDetails.phone}
+                    {order.customer?.mobile || "—"}
                   </a>
                 </p>
               </div>
@@ -121,27 +78,28 @@ export default function OrderDetailsModal({ order, onClose }) {
             {/* Shipping Details */}
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Shipping details
+                Shipping Address
               </h3>
-              <div className="space-y-1 text-sm text-gray-700">
-                <p className="font-medium">{mockOrderDetails.shippingDetails.name}</p>
-                <p>{mockOrderDetails.shippingDetails.address}</p>
-                <p>
-                  {mockOrderDetails.shippingDetails.city}{" "}
-                  {mockOrderDetails.shippingDetails.zip}
-                </p>
-                <p>{mockOrderDetails.shippingDetails.state}</p>
-              </div>
+              {order.address ? (
+                <div className="space-y-1 text-sm text-gray-700">
+                  <p className="font-medium">{order.address.name}</p>
+                  <p>{order.address.house}, {order.address.area}</p>
+                  {order.address.landmark && <p>{order.address.landmark}</p>}
+                  <p>
+                    {order.address.city}, {order.address.state} - {order.address.pincode}
+                  </p>
+                  <p className="mt-2">
+                    <span className="font-semibold">Mobile:</span> {order.address.mobile}
+                  </p>
+                </div>
+              ) : (
+                <p className="text-gray-500">No shipping address available</p>
+              )}
               <div className="mt-4 space-y-2 text-sm">
                 <p>
-                  <span className="font-semibold text-gray-900">Shipping method</span>
+                  <span className="font-semibold text-gray-900">Payment Method</span>
                   <br />
-                  <span className="font-medium text-gray-600">{mockOrderDetails.shippingMethod}</span>
-                </p>
-                <p>
-                  <span className="font-semibold text-gray-900">Payment via</span>
-                  <br />
-                  <span className="font-medium text-gray-600">{mockOrderDetails.paymentMethod}</span>
+                  <span className="font-medium text-gray-600 capitalize">{order.payment_method === 'cod' ? 'Cash on Delivery' : 'Online Payment'}</span>
                 </p>
               </div>
             </div>
@@ -153,47 +111,98 @@ export default function OrderDetailsModal({ order, onClose }) {
               <thead>
                 <tr className="border-b border-gray-200">
                   <th className="text-left py-3 px-4 text-sm font-semibold text-gray-900">
+                    Purchase ID
+                  </th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-900">
                     Product
                   </th>
                   <th className="text-left py-3 px-4 text-sm font-semibold text-gray-900">
                     Quantity
                   </th>
                   <th className="text-left py-3 px-4 text-sm font-semibold text-gray-900">
-                    Tax
-                  </th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-900">
-                    Total
+                    Price
                   </th>
                 </tr>
               </thead>
               <tbody>
-                {mockOrderDetails.items.map((item) => (
-                  <tr key={item.id} className="border-b border-gray-100">
-                    <td className="py-4 px-4">
-                      <p className="text-sm font-medium text-gray-900 mb-2">
-                        {item.name}
-                      </p>
-                      <div className="text-xs text-gray-600 space-y-1">
-                        {Object.entries(item.details).map(([key, value]) => (
-                          <div key={key}>
-                            <span className="font-medium">{key}</span> {value}
+                {order.item ? (
+                  <>
+                    <tr className="border-b border-gray-100">
+                      <td className="py-4 px-4">
+                        <p className="text-sm font-medium text-gray-900">
+                          {order.item.purchase_id}
+                        </p>
+                      </td>
+                      <td className="py-4 px-4">
+                        <p className="text-sm font-medium text-gray-900">
+                          {order.item.title}
+                        </p>
+                        {order.item.sku && (
+                          <p className="text-xs text-gray-600">SKU: {order.item.sku}</p>
+                        )}
+                      </td>
+                      <td className="py-4 px-4">
+                        <p className="text-sm text-gray-900">{order.item.quantity}</p>
+                      </td>
+                      <td className="py-4 px-4">
+                        <p className="text-sm font-semibold text-gray-900">
+                          ₹{parseFloat(order.item.sale_price || 0).toFixed(2)}
+                        </p>
+                      </td>
+                    </tr>
+                    {/* Customization Details Row */}
+                    {(order.item.ring_size || order.item.ring_name || order.item.font_id || order.item.color_id || order.item.symbol_id || order.item.symbol_side) && (
+                      <tr className="border-b border-gray-100 bg-gray-50">
+                        <td colSpan="4" className="py-4 px-4">
+                          <div className="grid grid-cols-2 gap-4 text-sm">
+                            {order.item.ring_size && (
+                              <div>
+                                <p className="text-xs font-semibold text-gray-600 uppercase">Ring Size</p>
+                                <p className="text-sm text-gray-900">{order.item.ring_size}</p>
+                              </div>
+                            )}
+                            {order.item.ring_name && (
+                              <div>
+                                <p className="text-xs font-semibold text-gray-600 uppercase">Ring Name</p>
+                                <p className="text-sm text-gray-900">{order.item.ring_name}</p>
+                              </div>
+                            )}
+                            {order.item.font_id && (
+                              <div>
+                                <p className="text-xs font-semibold text-gray-600 uppercase">Font Style</p>
+                                <p className="text-sm text-gray-900">{order.item.font_id}</p>
+                              </div>
+                            )}
+                            {order.item.color_id && (
+                              <div>
+                                <p className="text-xs font-semibold text-gray-600 uppercase">Enamel Color</p>
+                                <p className="text-sm text-gray-900">{order.item.color_id}</p>
+                              </div>
+                            )}
+                            {order.item.symbol_id && (
+                              <div>
+                                <p className="text-xs font-semibold text-gray-600 uppercase">Symbol</p>
+                                <p className="text-sm text-gray-900">{order.item.symbol_id}</p>
+                              </div>
+                            )}
+                            {order.item.symbol_side && (
+                              <div>
+                                <p className="text-xs font-semibold text-gray-600 uppercase">Symbol Direction</p>
+                                <p className="text-sm text-gray-900">{order.item.symbol_side}</p>
+                              </div>
+                            )}
                           </div>
-                        ))}
-                      </div>
-                    </td>
-                    <td className="py-4 px-4">
-                      <p className="text-sm text-gray-900">{item.quantity}</p>
-                    </td>
-                    <td className="py-4 px-4">
-                      <p className="text-sm text-gray-900">{item.tax}</p>
-                    </td>
-                    <td className="py-4 px-4">
-                      <p className="text-sm font-semibold text-gray-900">
-                        {item.total}
-                      </p>
+                        </td>
+                      </tr>
+                    )}
+                  </>
+                ) : (
+                  <tr>
+                    <td colSpan="4" className="py-4 px-4 text-center text-gray-500">
+                      No items available
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>
@@ -204,17 +213,17 @@ export default function OrderDetailsModal({ order, onClose }) {
               <div className="flex justify-between items-center py-2 border-b border-gray-200 mb-2">
                 <span className="text-sm text-gray-600">Subtotal</span>
                 <span className="text-sm font-medium text-gray-900">
-                  ₹{order.total.toFixed(2)}
+                  ₹{parseFloat(order.subtotal || 0).toFixed(2)}
                 </span>
               </div>
               <div className="flex justify-between items-center py-2 mb-2">
                 <span className="text-sm text-gray-600">Shipping</span>
-                <span className="text-sm font-medium text-gray-900">₹0.00</span>
+                <span className="text-sm font-medium text-gray-900">₹{parseFloat(order.shipping_cost || 0).toFixed(2)}</span>
               </div>
               <div className="flex justify-between items-center py-3 border-t-2 border-gray-300">
                 <span className="font-semibold text-gray-900">Total</span>
                 <span className="font-bold text-lg text-gray-900">
-                  ₹{order.total.toFixed(2)}
+                  ₹{parseFloat(order.total_amount || 0).toFixed(2)}
                 </span>
               </div>
             </div>
