@@ -1,5 +1,17 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { getPendingReviewsApi, approveReviewApi, rejectReviewApi } from "../api/adminReviewsApi";
+import { getReviewsApi, getPendingReviewsApi, approveReviewApi, rejectReviewApi } from "../api/adminReviewsApi";
+
+export const fetchReviews = createAsyncThunk(
+  "adminReviews/fetchReviews",
+  async ({ tab = "pending", limit = 20, offset = 0 } = {}, { rejectWithValue }) => {
+    try {
+      const response = await getReviewsApi(tab, limit, offset);
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
 
 export const fetchPendingReviews = createAsyncThunk(
   "adminReviews/fetchPendingReviews",
@@ -61,6 +73,25 @@ const adminReviewsSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      // Fetch reviews (generic with tab parameter)
+      .addCase(fetchReviews.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchReviews.fulfilled, (state, action) => {
+        state.loading = false;
+        state.reviews = action.payload.reviews || [];
+        state.pagination = action.payload.pagination || {
+          limit: 20,
+          offset: 0,
+          total: 0,
+        };
+      })
+      .addCase(fetchReviews.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
       // Fetch pending reviews
       .addCase(fetchPendingReviews.pending, (state) => {
         state.loading = true;
