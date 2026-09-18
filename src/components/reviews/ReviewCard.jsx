@@ -1,30 +1,12 @@
 "use client";
 
 export default function ReviewCard({ review, onAccept, onReject, loading }) {
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "pending":
-        return "bg-yellow-100 text-yellow-800";
-      case "approved":
-        return "bg-green-100 text-green-800";
-      case "rejected":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
+  const getStatusColor = (isApproved) => {
+    return isApproved ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800";
   };
 
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case "pending":
-        return "⏳";
-      case "approved":
-        return "✓";
-      case "rejected":
-        return "✕";
-      default:
-        return "•";
-    }
+  const getStatusIcon = (isApproved) => {
+    return isApproved ? "✓" : "⏳";
   };
 
   const renderStars = (rating) => {
@@ -48,18 +30,18 @@ export default function ReviewCard({ review, onAccept, onReject, loading }) {
       <div className="flex justify-between items-start mb-3">
         <div className="flex-1">
           <h3 className="text-base font-medium text-gray-900">
-            {review.customerName}
+            {review.customer_name}
           </h3>
           <p className="text-xs text-gray-500 truncate">
-            {review.customerEmail}
+            {review.customer_email}
           </p>
         </div>
         <span
           className={`px-2 py-1 rounded-full text-xs font-medium flex-shrink-0 ml-2 ${getStatusColor(
-            review.status
+            review.is_approved
           )}`}
         >
-          {getStatusIcon(review.status)}
+          {getStatusIcon(review.is_approved)}
         </span>
       </div>
 
@@ -71,18 +53,37 @@ export default function ReviewCard({ review, onAccept, onReject, loading }) {
         </div>
       </div>
 
-      {/* Comment */}
-      <div className="mb-3 flex-grow">
-        <p className="text-gray-700 text-sm leading-relaxed line-clamp-3">
-          {review.comment}
+      {/* Review Title */}
+      <div className="mb-2">
+        <p className="text-sm font-medium text-gray-900">
+          {review.review_title}
         </p>
       </div>
 
+      {/* Review Text */}
+      <div className="mb-3 flex-grow">
+        <p className="text-gray-700 text-sm leading-relaxed line-clamp-3">
+          {review.review_text}
+        </p>
+      </div>
+
+      {/* User Image Preview */}
+      {review.user_img && (
+        <div className="mb-3 rounded overflow-hidden bg-gray-100">
+          <img
+            src={review.user_img}
+            alt="Customer photo"
+            className="w-full h-24 object-cover"
+            onError={(e) => (e.target.style.display = "none")}
+          />
+        </div>
+      )}
+
       {/* Product Info */}
-      {review.productName && (
+      {review.product_title && (
         <div className="mb-3 p-2 bg-gray-50 rounded">
           <p className="text-xs text-gray-600 truncate">
-            <span className="font-medium">📦</span> {review.productName}
+            <span className="font-medium">📦</span> {review.product_title}
           </p>
         </div>
       )}
@@ -90,12 +91,12 @@ export default function ReviewCard({ review, onAccept, onReject, loading }) {
       {/* Date */}
       <div className="mb-3">
         <p className="text-xs text-gray-500">
-          {new Date(review.createdAt).toLocaleDateString()}
+          {new Date(review.created_at).toLocaleDateString()}
         </p>
       </div>
 
-      {/* Actions */}
-      {review.status === "pending" && (
+      {/* Actions - Only show if not approved */}
+      {!review.is_approved && (
         <div className="flex gap-2">
           <button
             onClick={() => onAccept(review.id)}
@@ -114,15 +115,9 @@ export default function ReviewCard({ review, onAccept, onReject, loading }) {
         </div>
       )}
 
-      {review.status === "approved" && (
+      {review.is_approved && (
         <div className="p-2 bg-green-50 rounded text-center">
-          <p className="text-xs text-green-700 font-medium">✓ Published</p>
-        </div>
-      )}
-
-      {review.status === "rejected" && (
-        <div className="p-2 bg-red-50 rounded text-center">
-          <p className="text-xs text-red-700 font-medium">✕ Rejected</p>
+          <p className="text-xs text-green-700 font-medium">✓ Approved</p>
         </div>
       )}
     </div>

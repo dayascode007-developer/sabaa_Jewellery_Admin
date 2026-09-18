@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
-import { MdClose, MdShoppingCart, MdCheckCircle, MdLocalShipping, MdError, MdInfo } from "react-icons/md";
+import { MdClose, MdShoppingCart, MdCheckCircle, MdLocalShipping, MdError, MdInfo, MdStar } from "react-icons/md";
 import { fetchNotifications, markNotificationAsRead, markAllNotificationsAsRead, deleteNotification as deleteNotif } from "@/store/slices/adminNotificationsSlice";
 import { formatDistanceToNow } from "date-fns";
 
@@ -60,6 +60,7 @@ const getNotificationIcon = (type) => {
     order_shipped: { icon: MdLocalShipping, bg: "bg-purple-100", color: "text-purple-600" },
     order_delivered: { icon: MdCheckCircle, bg: "bg-green-100", color: "text-green-600" },
     payment_failed: { icon: MdError, bg: "bg-red-100", color: "text-red-600" },
+    review: { icon: MdStar, bg: "bg-yellow-100", color: "text-yellow-600" },
   };
   return iconMap[type] || { icon: MdInfo, bg: "bg-gray-100", color: "text-gray-600" };
 };
@@ -90,9 +91,14 @@ export default function NotificationModal({ isOpen, onClose }) {
       dispatch(markNotificationAsRead(notification.id));
     }
 
-    // Navigate to orders page
     onClose();
-    router.push(`/orders`);
+
+    // Route based on notification type
+    if (notification.type === "review") {
+      router.push(`/reviews`);
+    } else {
+      router.push(`/orders`);
+    }
   };
 
   const handleMarkAsRead = (notificationId, e) => {

@@ -15,6 +15,7 @@ import unboxingReducer from "./slices/unboxingSlice";
 import adminOrdersReducer from "./slices/adminOrdersSlice";
 import adminNotificationsReducer from "./slices/adminNotificationsSlice";
 import bulkOrdersReducer from "./slices/bulkOrdersSlice";
+import adminReviewsReducer from "./slices/adminReviewsSlice";
 
 // A new store is created per request so server-rendered pages never share state
 // between users. Register slice reducers here as you add them:
@@ -37,5 +38,6 @@ export const makeStore = () =>
       adminOrders: adminOrdersReducer,
       adminNotifications: adminNotificationsReducer,
       bulkOrders: bulkOrdersReducer,
+      adminReviews: adminReviewsReducer,
     },
   });
