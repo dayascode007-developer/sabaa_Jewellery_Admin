@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { MdClose, MdShoppingCart, MdCheckCircle, MdLocalShipping, MdError, MdInfo } from "react-icons/md";
-import { fetchNotifications, markNotificationAsRead, deleteNotification as deleteNotif } from "@/store/slices/adminNotificationsSlice";
+import { fetchNotifications, markNotificationAsRead, markAllNotificationsAsRead, deleteNotification as deleteNotif } from "@/store/slices/adminNotificationsSlice";
 import { formatDistanceToNow } from "date-fns";
 
 const styles = `
@@ -105,6 +105,10 @@ export default function NotificationModal({ isOpen, onClose }) {
     dispatch(deleteNotif(notificationId));
   };
 
+  const handleMarkAllAsRead = () => {
+    dispatch(markAllNotificationsAsRead());
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -115,12 +119,22 @@ export default function NotificationModal({ isOpen, onClose }) {
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <h2 className="text-lg font-semibold text-gray-900">Notifications</h2>
-          <button
-            onClick={onClose}
-            className="p-1 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
-          >
-            <MdClose size={24} className="text-gray-500" />
-          </button>
+          <div className="flex items-center gap-2">
+            {notifications.length > 0 && notifications.some((n) => !n.is_read) && (
+              <button
+                onClick={handleMarkAllAsRead}
+                className="text-xs font-medium text-blue-600 hover:text-blue-700 px-2 py-1 hover:bg-blue-50 rounded transition-colors cursor-pointer"
+              >
+                Read All
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              className="p-1 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
+            >
+              <MdClose size={24} className="text-gray-500" />
+            </button>
+          </div>
         </div>
 
         {/* Notifications List */}
