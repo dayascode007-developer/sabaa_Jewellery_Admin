@@ -5,12 +5,12 @@ const getToken = () => {
   return localStorage.getItem("adminToken");
 };
 
-export const getPendingReviewsApi = async (limit = 20, offset = 0) => {
+export const getReviewsApi = async (tab = "pending", limit = 20, offset = 0) => {
   const token = getToken();
   if (!token) throw new Error("Authentication required");
 
   const response = await fetch(
-    `${API_URL}/api/admin/reviews/pending?limit=${limit}&offset=${offset}`,
+    `${API_URL}/api/admin/reviews?tab=${tab}&limit=${limit}&offset=${offset}`,
     {
       method: "GET",
       headers: {
@@ -27,6 +27,10 @@ export const getPendingReviewsApi = async (limit = 20, offset = 0) => {
   }
 
   return data.data;
+};
+
+export const getPendingReviewsApi = async (limit = 20, offset = 0) => {
+  return getReviewsApi("pending", limit, offset);
 };
 
 export const approveReviewApi = async (reviewId) => {

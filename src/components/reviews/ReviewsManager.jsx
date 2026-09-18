@@ -5,8 +5,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { MdChevronLeft, MdChevronRight } from "react-icons/md";
 import ReviewCard from "./ReviewCard";
 import SkeletonLoader from "@/components/common/SkeletonLoader";
+import { getReviewsApi } from "@/store/api/adminReviewsApi";
 import {
-  fetchPendingReviews,
+  fetchReviews,
   approveReview,
   rejectReview,
   clearError,
@@ -16,7 +17,6 @@ import {
   selectActionLoading,
   selectError,
   selectSuccessMessage,
-  selectPagination,
 } from "@/store/slices/adminReviewsSlice";
 
 export default function ReviewsManager() {
@@ -26,35 +26,52 @@ export default function ReviewsManager() {
   const actionLoading = useSelector(selectActionLoading);
   const error = useSelector(selectError);
   const successMessage = useSelector(selectSuccessMessage);
-  const pagination = useSelector(selectPagination);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [filter, setFilter] = useState("pending");
-  const [approvedReviews, setApprovedReviews] = useState([]);
-  const [rejectedReviews, setRejectedReviews] = useState([]);
+  const [tabCounts, setTabCounts] = useState({ pending: 0, approved: 0, rejected: 0 });
   const itemsPerPage = 12;
 
-  // Fetch reviews on component mount
+  // Fetch all tab counts on page load
   useEffect(() => {
-    dispatch(fetchPendingReviews({ limit: 100, offset: 0 }));
-  }, [dispatch]);
+    const fetchAllTabCounts = async () => {
+      try {
+        const [pendingResult, approvedResult, rejectedResult] = await Promise.all([
+          getReviewsApi("pending", 1, 0),
+          getReviewsApi("approved", 1, 0),
+          getReviewsApi("rejected", 1, 0),
+        ]);
 
-  // Handle approve - move to approved list
+        setTabCounts({
+          pending: pendingResult.pagination?.total || 0,
+          approved: approvedResult.pagination?.total || 0,
+          rejected: rejectedResult.pagination?.total || 0,
+        });
+      } catch (error) {
+        console.error("Failed to fetch tab counts:", error);
+      }
+    };
+
+    fetchAllTabCounts();
+  }, []);
+
+  // Fetch reviews for the selected tab
+  useEffect(() => {
+    dispatch(fetchReviews({ tab: filter, limit: 100, offset: 0 }));
+  }, [filter, dispatch]);
+
+  // Handle approve - refresh the current tab
   const handleAccept = (reviewId) => {
-    const approved = reviews.find((r) => r.id === reviewId);
-    if (approved) {
-      setApprovedReviews([...approvedReviews, { ...approved, is_approved: true }]);
-    }
-    dispatch(approveReview(reviewId));
+    dispatch(approveReview(reviewId)).then(() => {
+      dispatch(fetchReviews({ tab: filter, limit: 100, offset: 0 }));
+    });
   };
 
-  // Handle reject - move to rejected list
+  // Handle reject - refresh the current tab
   const handleReject = (reviewId) => {
-    const rejected = reviews.find((r) => r.id === reviewId);
-    if (rejected) {
-      setRejectedReviews([...rejectedReviews, { ...rejected, is_approved: false }]);
-    }
-    dispatch(rejectReview(reviewId));
+    dispatch(rejectReview(reviewId)).then(() => {
+      dispatch(fetchReviews({ tab: filter, limit: 100, offset: 0 }));
+    });
   };
 
   // Clear messages after 3 seconds
@@ -73,15 +90,8 @@ export default function ReviewsManager() {
     setCurrentPage(1);
   }, [filter]);
 
-  // Filter reviews based on selected tab
-  let displayedReviews = [];
-  if (filter === "pending") {
-    displayedReviews = reviews;
-  } else if (filter === "approved") {
-    displayedReviews = approvedReviews;
-  } else if (filter === "rejected") {
-    displayedReviews = rejectedReviews;
-  }
+  // Reviews are already filtered by the selected tab (fetched from backend)
+  const displayedReviews = reviews;
 
   // Calculate pagination
   const totalPages = Math.ceil(displayedReviews.length / itemsPerPage);
@@ -89,22 +99,11 @@ export default function ReviewsManager() {
   const paginatedReviews = displayedReviews.slice(startIndex, startIndex + itemsPerPage);
 
   const stats = {
-    pending: reviews.length,
-    approved: approvedReviews.length,
-    rejected: rejectedReviews.length,
+    pending: tabCounts.pending,
+    approved: tabCounts.approved,
+    rejected: tabCounts.rejected,
+    total: tabCounts.pending + tabCounts.approved + tabCounts.rejected,
   };
-
-  if (loading) {
-    return (
-      <div className="space-y-6">
-        <div className="space-y-3 animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
-          <div className="h-4 bg-gray-200 rounded w-1/3"></div>
-        </div>
-        <SkeletonLoader type="card" count={6} />
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">
@@ -203,7 +202,9 @@ export default function ReviewsManager() {
       )}
 
       {/* Reviews Grid */}
-      {paginatedReviews.length > 0 ? (
+      {loading ? (
+        <SkeletonLoader type="card" count={6} />
+      ) : paginatedReviews.length > 0 ? (
         <div className="grid grid-cols-3 gap-4">
           {paginatedReviews.map((review) => (
             <ReviewCard

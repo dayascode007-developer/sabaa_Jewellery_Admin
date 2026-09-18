@@ -238,6 +238,12 @@ export default function OrderDetailsModal({ order, onClose }) {
                   ₹{parseFloat(order.subtotal || 0).toFixed(2)}
                 </span>
               </div>
+              {parseFloat(order.discount_amount || 0) > 0 && (
+                <div className="flex justify-between items-center text-green-600">
+                  <span className="text-sm font-medium">Discount</span>
+                  <span className="text-sm font-bold">-₹{parseFloat(order.discount_amount || 0).toFixed(2)}</span>
+                </div>
+              )}
               <div className="flex justify-between items-center">
                 <span className="text-sm text-slate-600">Shipping</span>
                 <span className="text-sm font-medium text-slate-900">₹{parseFloat(order.shipping_cost || 0).toFixed(2)}</span>
