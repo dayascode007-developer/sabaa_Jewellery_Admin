@@ -10,7 +10,7 @@ export default function StatCard({
   const isNegative = change < 0;
   const isIconComponent = typeof Icon === "function";
   return (
-    <div className="bg-white rounded-xl p-4">
+    <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-md hover:shadow-lg transition-shadow">
       <div className="flex items-start gap-3">
         <div
           className={`w-16 h-16 bg-linear-to-br ${bgColor} rounded-4xl flex items-center justify-center shrink-0`}
