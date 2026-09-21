@@ -26,11 +26,19 @@ export const getOrdersApi = async (limit = 10, offset = 0, filters = {}) => {
   if (filters.customerId) {
     params.append("customerId", filters.customerId);
   }
-  if (filters.from) {
-    params.append("from", filters.from);
-  }
-  if (filters.to) {
-    params.append("to", filters.to);
+  if (filters.date) {
+    const [year, month] = filters.date.split("-");
+    params.append("from", `${year}-${month}-01`);
+    const nextMonth = parseInt(month) === 12 ? 1 : parseInt(month) + 1;
+    const nextYear = parseInt(month) === 12 ? parseInt(year) + 1 : year;
+    params.append("to", `${nextYear}-${String(nextMonth).padStart(2, "0")}-01`);
+  } else {
+    if (filters.from) {
+      params.append("from", filters.from);
+    }
+    if (filters.to) {
+      params.append("to", filters.to);
+    }
   }
   if (filters.search) {
     params.append("search", filters.search);

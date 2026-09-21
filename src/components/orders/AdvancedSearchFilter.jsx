@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { MdClose } from "react-icons/md";
 import CustomDropdown from "@/components/common/CustomDropdown";
 
@@ -13,37 +13,34 @@ const STATUS_OPTIONS = [
   { value: "Cancelled", label: "Cancelled" },
 ];
 
-const SHIPPING_PROVIDER_OPTIONS = [
-  { value: "Delhivery", label: "Delhivery" },
-  { value: "India Post", label: "India Post" },
-  { value: "DTDC", label: "DTDC" },
-  { value: "DTDC Plus", label: "DTDC Plus" },
-  { value: "The Professional Couriers", label: "The Professional Couriers" },
-  { value: "ST Courier", label: "ST Courier" },
-  { value: "Amazon Shipping IN", label: "Amazon Shipping IN" },
-];
-
-const getAvailableMonths = (orders) => {
-  const years = new Set();
+const getAvailableProviders = (orders) => {
+  const providers = new Set();
   orders.forEach((order) => {
-    const date = new Date(order.date);
-    years.add(date.getFullYear());
-  });
-
-  const months = [];
-  const sortedYears = Array.from(years).sort((a, b) => b - a);
-
-  sortedYears.forEach((year) => {
-    for (let month = 11; month >= 0; month--) {
-      const key = `${year}-${String(month + 1).padStart(2, "0")}`;
-      const label = new Date(year, month).toLocaleDateString("en-US", {
-        month: "long",
-        year: "numeric",
-      });
-      months.push({ value: key, label });
+    if (order.courier_name) {
+      providers.add(order.courier_name);
     }
   });
+  return Array.from(providers).sort();
+};
 
+const getAvailableYears = (orders) => {
+  const years = new Set();
+  orders.forEach((order) => {
+    const date = new Date(order.created_at);
+    years.add(date.getFullYear());
+  });
+  return Array.from(years).sort((a, b) => b - a);
+};
+
+const getMonthsForYear = (selectedYear) => {
+  const months = [];
+  for (let month = 0; month < 12; month++) {
+    const key = `${selectedYear}-${String(month + 1).padStart(2, "0")}`;
+    const label = new Date(selectedYear, month).toLocaleDateString("en-US", {
+      month: "long",
+    });
+    months.push({ value: key, label });
+  }
   return months;
 };
 
@@ -54,24 +51,96 @@ export default function AdvancedSearchFilter({
   onApply,
   orders = [],
 }) {
-  const availableMonths = useMemo(() => getAvailableMonths(orders), [orders]);
+  const [selectedYear, setSelectedYear] = useState(
+    filters.date ? filters.date.split("-")[0] : ""
+  );
+  const [selectedMonth, setSelectedMonth] = useState(
+    filters.date ? filters.date.split("-")[1] : ""
+  );
+  const [availableProvidersData, setAvailableProvidersData] = useState([]);
 
-  const handleStatusChange = (status) => {
-    setFilters({
-      ...filters,
-      status: filters.status === status ? "" : status,
-    });
+  useEffect(() => {
+    if (filters.date) {
+      const [year, month] = filters.date.split("-");
+      setSelectedYear(year);
+      setSelectedMonth(month);
+    }
+  }, []);
+
+  useEffect(() => {
+    const fetchCouriers = async () => {
+      try {
+        const token = localStorage.getItem("adminToken");
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/admin/orders/couriers`,
+          {
+            headers: {
+              "Authorization": `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        const data = await response.json();
+        setAvailableProvidersData(data.data || []);
+      } catch (error) {
+        console.error("Failed to fetch couriers:", error);
+      }
+    };
+
+    fetchCouriers();
+  }, []);
+
+  const availableYears = useMemo(() => {
+    const years = getAvailableYears(orders);
+    if (selectedYear && !years.includes(parseInt(selectedYear))) {
+      years.push(parseInt(selectedYear));
+      years.sort((a, b) => b - a);
+    }
+    return years;
+  }, [orders, selectedYear]);
+
+  const availableMonths = useMemo(
+    () => (selectedYear ? getMonthsForYear(parseInt(selectedYear)) : []),
+    [selectedYear]
+  );
+
+  const availableProviders = useMemo(
+    () => availableProvidersData.length > 0 ? availableProvidersData : getAvailableProviders(orders),
+    [availableProvidersData, orders]
+  );
+
+  const handleYearChange = (year) => {
+    setSelectedYear(year);
+    setSelectedMonth("");
   };
 
-  const handleDateChange = (date) => {
-    setFilters({
-      ...filters,
-      date: filters.date === date ? "" : date,
-    });
+  const handleMonthChange = (monthValue) => {
+    if (monthValue) {
+      setSelectedMonth(monthValue.split("-")[1]);
+      setFilters(prev => ({
+        ...prev,
+        date: monthValue,
+      }));
+    } else {
+      setSelectedMonth("");
+      setFilters(prev => ({
+        ...prev,
+        date: "",
+      }));
+    }
+  };
+
+  const handleStatusChange = (status) => {
+    setFilters(prev => ({
+      ...prev,
+      status: prev.status === status ? "" : status,
+    }));
   };
 
   const handleClearAll = () => {
     setFilters({});
+    setSelectedYear("");
+    setSelectedMonth("");
   };
 
   const handleApply = () => {
@@ -95,20 +164,38 @@ export default function AdvancedSearchFilter({
 
         {/* Filter Content */}
         <div className="space-y-6">
-          {/* Date Filter */}
+          {/* Year Filter */}
           <div>
             <CustomDropdown
-              label="Date"
+              label="Year"
               options={[
-                { id: "", name: "All dates" },
+                { id: "", name: "All years" },
+                ...availableYears.map((year) => ({
+                  id: year.toString(),
+                  name: year.toString(),
+                })),
+              ]}
+              value={selectedYear}
+              onChange={handleYearChange}
+              placeholder="Select year"
+            />
+          </div>
+
+          {/* Month Filter */}
+          <div>
+            <CustomDropdown
+              label="Month"
+              options={[
+                { id: "", name: "All months" },
                 ...availableMonths.map((month) => ({
                   id: month.value,
                   name: month.label,
                 })),
               ]}
               value={filters.date || ""}
-              onChange={handleDateChange}
-              placeholder="Select date"
+              onChange={handleMonthChange}
+              placeholder="Select month"
+              disabled={!selectedYear}
             />
           </div>
 
@@ -135,17 +222,17 @@ export default function AdvancedSearchFilter({
               label="Shipping Provider"
               options={[
                 { id: "", name: "All providers" },
-                ...SHIPPING_PROVIDER_OPTIONS.map((option) => ({
-                  id: option.value,
-                  name: option.label,
+                ...availableProviders.map((provider) => ({
+                  id: provider,
+                  name: provider,
                 })),
               ]}
               value={filters.shippingProvider || ""}
               onChange={(value) => {
-                setFilters({
-                  ...filters,
+                setFilters(prev => ({
+                  ...prev,
                   shippingProvider: value,
-                });
+                }));
               }}
               placeholder="Select provider"
             />
