@@ -153,6 +153,69 @@ export default function AddProductForm({ productId = null }) {
     addressContact: 4,
   });
 
+  // Error state for step-by-step validation
+  const [stepErrors, setStepErrors] = useState({});
+
+  // Validation functions for each step
+  const validateGeneral = () => {
+    const errors = {};
+    if (!formData.title?.trim()) errors.title = "Product title is required";
+    if (!formData.description?.trim()) errors.description = "Description is required";
+    if (!formData.regularPrice || formData.regularPrice <= 0) errors.regularPrice = "Regular price is required and must be greater than 0";
+    if (!formData.category) errors.category = "Category is required";
+    return errors;
+  };
+
+  const validateInventory = () => {
+    const errors = {};
+    if (!formData.sku?.trim()) errors.sku = "SKU is required";
+    if (formData.trackStock) {
+      if (formData.quantity === null || formData.quantity === "" || formData.quantity < 0) {
+        errors.quantity = "Quantity is required and cannot be negative";
+      }
+      if (formData.minStock === null || formData.minStock === "" || formData.minStock < 0) {
+        errors.minStock = "Min stock is required and cannot be negative";
+      }
+    }
+    return errors;
+  };
+
+  const validateShipping = () => {
+    const errors = {};
+    // Shipping fields are optional - no validation required
+    return errors;
+  };
+
+  const validateAttributes = () => {
+    const errors = {};
+    // Add attributes-specific validation as needed
+    return errors;
+  };
+
+  const validateDetails = () => {
+    const errors = {};
+    // Add details-specific validation as needed
+    return errors;
+  };
+
+  // Main validation function for each step
+  const validateStep = (step) => {
+    switch (step) {
+      case "general":
+        return validateGeneral();
+      case "inventory":
+        return validateInventory();
+      case "shipping":
+        return validateShipping();
+      case "attributes":
+        return validateAttributes();
+      case "details":
+        return validateDetails();
+      default:
+        return {};
+    }
+  };
+
   useEffect(() => {
     const storedData = sessionStorage.getItem("editProductData");
     if (storedData) {
@@ -393,6 +456,30 @@ export default function AddProductForm({ productId = null }) {
     if (e) {
       e.preventDefault();
     }
+
+    // Validate current step before moving forward
+    const errors = validateStep(activeTab);
+
+    if (Object.keys(errors).length > 0) {
+      // Show error modal with validation messages
+      const errorMessages = Object.values(errors).join("\n");
+      setErrorMessage(errorMessages);
+      setShowErrorModal(true);
+      setStepErrors(errors);
+      // Scroll to first error field
+      setTimeout(() => {
+        const firstErrorField = document.querySelector('[name="' + Object.keys(errors)[0] + '"]');
+        if (firstErrorField) {
+          firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          firstErrorField.focus();
+        }
+      }, 100);
+      return;
+    }
+
+    // Clear errors when moving to next step
+    setStepErrors({});
+
     const tabOrder = [
       "general",
       "inventory",
@@ -440,6 +527,15 @@ export default function AddProductForm({ productId = null }) {
     e.preventDefault();
     // Only submit when on details tab
     if (activeTab === "details") {
+      // Validate details step before submission
+      const errors = validateStep("details");
+      if (Object.keys(errors).length > 0) {
+        const errorMessages = Object.values(errors).join("\n");
+        setErrorMessage(errorMessages);
+        setShowErrorModal(true);
+        return;
+      }
+
       // Create FormData with all collected data
       const submitData = new FormData();
 

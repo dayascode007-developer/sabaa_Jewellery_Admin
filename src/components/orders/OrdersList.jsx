@@ -23,7 +23,6 @@ import SuccessModal from "@/components/modals/SuccessModal";
 
 const ITEMS_PER_PAGE = 10;
 
-
 const getStatusColor = (status) => {
   const colors = {
     pending: "bg-yellow-100 text-yellow-800",
@@ -56,7 +55,12 @@ const getStatusLabel = (status) => {
 
 export default function OrdersList() {
   const dispatch = useDispatch();
-  const { list: orders, pagination, loading, error } = useSelector((state) => state.adminOrders);
+  const {
+    list: orders,
+    pagination,
+    loading,
+    error,
+  } = useSelector((state) => state.adminOrders);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterOpen, setFilterOpen] = useState(false);
@@ -64,7 +68,10 @@ export default function OrdersList() {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [activeStatusFilter, setActiveStatusFilter] = useState("all");
   const [bulkOperationsOpen, setBulkOperationsOpen] = useState(false);
-  const [successModal, setSuccessModal] = useState({ isOpen: false, updatedCount: 0 });
+  const [successModal, setSuccessModal] = useState({
+    isOpen: false,
+    updatedCount: 0,
+  });
   const [selectedRecords, setSelectedRecords] = useState(new Set());
   const [isExporting, setIsExporting] = useState(false);
   const [statusCounts, setStatusCounts] = useState({
@@ -104,9 +111,11 @@ export default function OrdersList() {
   // Fetch orders on mount and when filters/pagination changes
   useEffect(() => {
     const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+    console.log("📦 Fetching orders...", { offset, filters, currentPage });
     dispatch(fetchOrders({ limit: ITEMS_PER_PAGE, offset, filters }));
     fetchStatusCounts();
-  }, [dispatch, currentPage, filters]);
+    console.log("📦 Orders loaded! Count:", orders.length);
+  }, [dispatch, currentPage, filters, orders.length]);
 
   const formatCurrency = (amount) => {
     return `₹${amount.toFixed(2)}`;
@@ -144,7 +153,8 @@ export default function OrdersList() {
   };
 
   // Check if all current page items are selected
-  const isPageAllSelected = orders.length > 0 && orders.every((order) => selectedRecords.has(order.id));
+  const isPageAllSelected =
+    orders.length > 0 && orders.every((order) => selectedRecords.has(order.id));
 
   // Smart Excel export with selection support
   const handleDownloadExcel = async () => {
@@ -155,7 +165,9 @@ export default function OrdersList() {
       // Priority logic: if records selected, export only those; else export all filtered records
       if (selectedRecords.size > 0) {
         // Export only selected records
-        ordersToExport = orders.filter((order) => selectedRecords.has(order.id));
+        ordersToExport = orders.filter((order) =>
+          selectedRecords.has(order.id)
+        );
       } else {
         // Export ALL filtered records (fetch complete dataset)
         const allOrdersResult = await dispatch(
@@ -196,8 +208,12 @@ export default function OrdersList() {
 
   const handleImportExcel = async (file) => {
     try {
+      console.log("📊 Excel import started...", file.name);
       const result = await dispatch(importOrdersExcel(file));
+      console.log("📊 Excel import result:", result);
+
       if (result.payload) {
+        console.log("✅ Import success! Updated count:", result.payload.updatedCount);
         // Show success modal immediately
         setSuccessModal({
           isOpen: true,
@@ -209,10 +225,11 @@ export default function OrdersList() {
         dispatch(fetchOrders({ limit: ITEMS_PER_PAGE, offset, filters }));
         fetchStatusCounts();
       } else if (result.payload === undefined && result.error) {
+        console.error("❌ Import failed:", result.error.message);
         alert(`❌ Import failed: ${result.error.message}`);
       }
     } catch (error) {
-      console.error("Import error:", error);
+      console.error("❌ Import error:", error);
       alert("Failed to import orders");
     }
   };
@@ -228,7 +245,9 @@ export default function OrdersList() {
     return matchesSearch;
   });
 
-  const totalPages = pagination.total ? Math.ceil(pagination.total / ITEMS_PER_PAGE) : 1;
+  const totalPages = pagination.total
+    ? Math.ceil(pagination.total / ITEMS_PER_PAGE)
+    : 1;
 
   return (
     <>
@@ -300,7 +319,7 @@ export default function OrdersList() {
               }`}
               style={
                 activeStatusFilter === "all"
-                  ? { backgroundColor: "var(--primary)" }
+                  ? { backgroundColor: "#10B981" }
                   : {}
               }
             >
@@ -320,23 +339,26 @@ export default function OrdersList() {
               <button
                 key={status.key}
                 onClick={() => {
+                  console.log("🔵 Status filter clicked:", status.key);
                   setActiveStatusFilter(status.key);
                   setFilters({ status: status.key });
                   setCurrentPage(1);
                 }}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all cursor-pointer ${
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all cursor-pointer shadow-sm ${
                   activeStatusFilter === status.key
-                    ? "text-white shadow-sm"
-                    : "text-gray-600 hover:text-gray-900"
+                    ? "text-white"
+                    : "text-gray-700 bg-gray-200 hover:bg-gray-300"
                 }`}
                 style={
                   activeStatusFilter === status.key
-                    ? { backgroundColor: "var(--primary)" }
+                    ? { backgroundColor: "#10B981" }
                     : {}
                 }
               >
                 {status.label}{" "}
-                <span className="font-semibold">({statusCounts[status.key] || 0})</span>
+                <span className="font-semibold">
+                  ({statusCounts[status.key] || 0})
+                </span>
               </button>
             ))}
           </div>
@@ -388,7 +410,11 @@ export default function OrdersList() {
                     onClick={() =>
                       setCurrentPage((prev) => Math.min(prev + 1, totalPages))
                     }
-                    disabled={currentPage >= totalPages || loading || !pagination.hasMore}
+                    disabled={
+                      currentPage >= totalPages ||
+                      loading ||
+                      !pagination.hasMore
+                    }
                     className="p-1 text-gray-600 hover:bg-gray-100 rounded disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <MdChevronRight size={20} />
@@ -451,7 +477,10 @@ export default function OrdersList() {
                       key={order.purchase_id}
                       className="hover:bg-gray-50 transition-colors"
                     >
-                      <td className="px-6 py-4 w-12" onClick={(e) => e.stopPropagation()}>
+                      <td
+                        className="px-6 py-4 w-12"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <input
                           type="checkbox"
                           className="rounded cursor-pointer"

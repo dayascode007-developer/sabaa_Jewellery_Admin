@@ -185,16 +185,20 @@ export default function AdvancedSearchFilter({
           <div>
             <CustomDropdown
               label="Month"
-              options={[
-                { id: "", name: "All months" },
-                ...availableMonths.map((month) => ({
-                  id: month.value,
-                  name: month.label,
-                })),
-              ]}
+              options={
+                !selectedYear
+                  ? [{ id: "", name: "Please choose year first" }]
+                  : [
+                      { id: "", name: "All months" },
+                      ...availableMonths.map((month) => ({
+                        id: month.value,
+                        name: month.label,
+                      })),
+                    ]
+              }
               value={filters.date || ""}
               onChange={handleMonthChange}
-              placeholder="Select month"
+              placeholder={selectedYear ? "Select month" : "Please choose year first"}
               disabled={!selectedYear}
             />
           </div>
