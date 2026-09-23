@@ -23,33 +23,18 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      // Dispatch Redux login action with backend API call
-      const result = dispatch(
+      await dispatch(
         loginAdmin({
           email: email.trim().toLowerCase(),
           password: password.trim(),
         })
-      );
+      ).unwrap();
 
-      // Handle the result
-      result
-        .then(() => {
-          // Login successful, redirect to dashboard
-          console.log("✅ Login successful, redirecting...");
-          router.push("/");
-        })
-        .catch((err) => {
-          // Login failed, show error message
-          const errorMsg = err || "Login failed. Please try again.";
-          setError(errorMsg);
-          setLoading(false);
-          console.error("❌ Login failed:", errorMsg);
-        });
+      router.push("/");
     } catch (err) {
-      console.error("❌ Login error:", err);
-      setError(
-        "An error occurred during login. Please check your credentials."
-      );
+      const errorMsg = err || "Login failed. Please try again.";
+      setError(errorMsg);
+    } finally {
       setLoading(false);
     }
   };

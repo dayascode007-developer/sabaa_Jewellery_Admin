@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { MdChevronLeft, MdChevronRight, MdSearch, MdDownload } from "react-icons/md";
 import SkeletonLoader from "@/components/common/SkeletonLoader";
@@ -14,20 +14,43 @@ export default function CustomersList() {
   const { customers, total, loading, downloadLoading } = useSelector((state) => state.customers);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const debounceTimer = useRef(null);
 
-  // Distinguish between initial loading and pagination fetching
-  const isInitialLoading = loading && customers.length === 0;
+  // Only show skeleton on very first load, not on subsequent searches with no results
+  const isInitialLoading = loading && !hasLoaded;
 
+  // Set hasLoaded flag when data first loads
+  useEffect(() => {
+    if (!loading && customers.length > 0 && !hasLoaded) {
+      setHasLoaded(true);
+    }
+  }, [loading, customers.length, hasLoaded]);
+
+  // Debounce search term changes
+  useEffect(() => {
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+
+    debounceTimer.current = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+      setCurrentPage(1);
+    }, 300);
+
+    return () => clearTimeout(debounceTimer.current);
+  }, [searchTerm]);
+
+  // Fetch customers when debounced search term or page changes
   useEffect(() => {
     const offset = (currentPage - 1) * ITEMS_PER_PAGE;
     dispatch(
       fetchCustomers({
         limit: ITEMS_PER_PAGE,
         offset,
-        filters: { search: searchTerm },
+        filters: { search: debouncedSearchTerm },
       })
     );
-  }, [dispatch, currentPage, searchTerm]);
+  }, [dispatch, currentPage, debouncedSearchTerm]);
 
   const formatDate = (date) => {
     if (!date) return "—";
@@ -97,10 +120,7 @@ export default function CustomersList() {
                 type="text"
                 placeholder="Search by name, email, or phone..."
                 value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  setCurrentPage(1);
-                }}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-black"
                 style={{ "--tw-ring-color": "var(--primary)" }}
               />

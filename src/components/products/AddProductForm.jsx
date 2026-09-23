@@ -378,6 +378,19 @@ export default function AddProductForm({ productId = null }) {
     setFormData((prev) => ({ ...prev, sku: value }));
   };
 
+  const handlePositiveNumberChange = (e) => {
+    const { name, value } = e.target;
+    let numValue = value === '' ? '' : Math.max(0, Number(value));
+    setFormData((prev) => ({ ...prev, [name]: numValue }));
+  };
+
+  const handlePastePositiveNumber = (e) => {
+    const pastedText = e.clipboardData.getData('text');
+    if (pastedText.includes('-') || Number(pastedText) < 0) {
+      e.preventDefault();
+    }
+  };
+
   const handleCheckboxChange = (fieldName, option) => {
     setFormData((prev) => {
       const currentArray = prev[fieldName] || [];
@@ -462,7 +475,7 @@ export default function AddProductForm({ productId = null }) {
 
     if (Object.keys(errors).length > 0) {
       // Show error modal with validation messages
-      const errorMessages = Object.values(errors).join("\n");
+      const errorMessages = Object.values(errors).join(", ");
       setErrorMessage(errorMessages);
       setShowErrorModal(true);
       setStepErrors(errors);
@@ -1172,8 +1185,9 @@ export default function AddProductForm({ productId = null }) {
                       type="number"
                       name="quantity"
                       value={formData.quantity}
-                      onChange={handleInputChange}
-                      placeholder="0"
+                      onChange={handlePositiveNumberChange}
+                      onPaste={handlePastePositiveNumber}
+                      min="0"
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-black"
                       style={{ "--tw-ring-color": "var(--primary)" }}
                       required
@@ -1189,8 +1203,9 @@ export default function AddProductForm({ productId = null }) {
                       type="number"
                       name="minStock"
                       value={formData.minStock}
-                      onChange={handleInputChange}
-                      placeholder="e.g., 5"
+                      onChange={handlePositiveNumberChange}
+                      onPaste={handlePastePositiveNumber}
+                      min="0"
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-black"
                       style={{ "--tw-ring-color": "var(--primary)" }}
                     />

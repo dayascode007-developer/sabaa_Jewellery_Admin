@@ -213,7 +213,10 @@ export default function OrdersList() {
       console.log("📊 Excel import result:", result);
 
       if (result.payload) {
-        console.log("✅ Import success! Updated count:", result.payload.updatedCount);
+        console.log(
+          "✅ Import success! Updated count:",
+          result.payload.updatedCount
+        );
         // Show success modal immediately
         setSuccessModal({
           isOpen: true,
@@ -319,7 +322,7 @@ export default function OrdersList() {
               }`}
               style={
                 activeStatusFilter === "all"
-                  ? { backgroundColor: "#10B981" }
+                  ? { backgroundColor: "#E0A75E" }
                   : {}
               }
             >
@@ -351,7 +354,7 @@ export default function OrdersList() {
                 }`}
                 style={
                   activeStatusFilter === status.key
-                    ? { backgroundColor: "#10B981" }
+                    ? { backgroundColor: "#E0A75E" }
                     : {}
                 }
               >
