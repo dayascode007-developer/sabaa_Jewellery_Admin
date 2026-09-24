@@ -12,15 +12,18 @@ import UserDropdown from "@/components/common/UserDropdown";
 import NotificationModal from "@/components/common/NotificationModal";
 import { fetchAdminDetails } from "@/store/slices/adminAuthSlice";
 import { fetchUnreadCount } from "@/store/slices/adminNotificationsSlice";
+import { fetchSettings } from "@/store/slices/settingsSlice";
 
 export default function Header({ isCollapsed, pathname }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [showDisabledTooltip, setShowDisabledTooltip] = useState(false);
   const dropdownRef = useRef(null);
   const searchParams = useSearchParams();
   const dispatch = useDispatch();
   const { admin, token, isHydrated } = useSelector((state) => state.adminAuth);
   const { unreadCount } = useSelector((state) => state.adminNotifications);
+  const { notificationsEnabled } = useSelector((state) => state.settings);
 
   // Fetch admin details
   useEffect(() => {
@@ -29,12 +32,20 @@ export default function Header({ isCollapsed, pathname }) {
     }
   }, [token, isHydrated, dispatch]);
 
-  // Fetch unread notification count
+  // Fetch settings
   useEffect(() => {
     if (token && isHydrated) {
+      console.log("Fetching settings...");
+      dispatch(fetchSettings()).then(() => console.log("Settings fetched, notificationsEnabled:", notificationsEnabled));
+    }
+  }, [token, isHydrated, dispatch, notificationsEnabled]);
+
+  // Fetch unread notification count
+  useEffect(() => {
+    if (token && isHydrated && notificationsEnabled) {
       dispatch(fetchUnreadCount());
     }
-  }, [token, isHydrated, dispatch]);
+  }, [token, isHydrated, notificationsEnabled, dispatch]);
 
   // Refresh unread count when notification modal closes
   useEffect(() => {
@@ -98,20 +109,34 @@ export default function Header({ isCollapsed, pathname }) {
         </h2>
       </div>
       <div className="flex items-center gap-6">
-        <button
-          onClick={() => setIsNotificationOpen(!isNotificationOpen)}
-          className="relative p-2 border border-gray-300 hover:border-gray-400 rounded-full text-gray-600 hover:text-gray-900 transition-colors cursor-pointer"
-        >
-          <IoIosNotificationsOutline className="w-6 h-6" />
-          {unreadCount > 0 && (
-            <span
-              className="absolute -top-2 -right-1 w-5 h-5 flex items-center justify-center text-xs text-white font-bold rounded-full"
-              style={{ backgroundColor: "var(--primary)" }}
-            >
-              {unreadCount > 99 ? "99+" : unreadCount}
-            </span>
+        <div className="relative group">
+          <button
+            onClick={() => notificationsEnabled && setIsNotificationOpen(!isNotificationOpen)}
+            onMouseEnter={() => setShowDisabledTooltip(!notificationsEnabled)}
+            onMouseLeave={() => setShowDisabledTooltip(false)}
+            className={`relative p-2 border rounded-full transition-colors ${
+              notificationsEnabled
+                ? "border-gray-300 hover:border-gray-400 text-gray-600 hover:text-gray-900 cursor-pointer"
+                : "border-gray-200 text-gray-400 cursor-not-allowed opacity-50"
+            }`}
+          >
+            <IoIosNotificationsOutline className="w-6 h-6" />
+            {notificationsEnabled && unreadCount > 0 && (
+              <span
+                className="absolute -top-2 -right-1 w-5 h-5 flex items-center justify-center text-xs text-white font-bold rounded-full"
+                style={{ backgroundColor: "var(--primary)" }}
+              >
+                {unreadCount > 99 ? "99+" : unreadCount}
+              </span>
+            )}
+          </button>
+
+          {showDisabledTooltip && (
+            <div className="absolute top-12 -right-16 bg-gray-900 text-white text-xs px-3 py-2 rounded whitespace-nowrap z-50 pointer-events-none shadow-lg">
+              Please enable notifications
+            </div>
           )}
-        </button>
+        </div>
         <div
           ref={dropdownRef}
           className="flex items-center gap-3 pl-6 border-l border-gray-200 relative"

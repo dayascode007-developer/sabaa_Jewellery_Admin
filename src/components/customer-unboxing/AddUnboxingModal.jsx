@@ -94,7 +94,7 @@ export default function AddUnboxingModal({
               value={formData.title}
               onChange={handleChange}
               placeholder="e.g., Gold Necklace Unboxing"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#430121]"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#430121] text-black"
               required
             />
           </div>
@@ -110,7 +110,7 @@ export default function AddUnboxingModal({
               value={formData.youtubeLink}
               onChange={handleChange}
               placeholder="https://www.youtube.com/watch?v=..."
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#430121]"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#430121] text-black"
               required
             />
           </div>

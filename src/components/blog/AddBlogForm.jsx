@@ -137,16 +137,24 @@ export default function AddBlogForm({ initialBlog = null }) {
     if (contentSections.length === 0) {
       errors.content = "At least one content section is required";
     } else {
-      const plainText = contentSections[0].text
-        .replace(/<[^>]*>/g, "")
-        .trim();
-      if (!plainText) {
-        errors.content = "At least one content section with text is required";
+      for (let section of contentSections) {
+        if (!section.heading.trim()) {
+          errors.content = "All sections must have a heading";
+          break;
+        }
+        const plainText = section.text.replace(/<[^>]*>/g, "").trim();
+        if (!plainText) {
+          errors.content = "All sections must have content text";
+          break;
+        }
       }
     }
 
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
+      const errMsg = Object.values(errors).find(e => e) || "Please fill in all required fields";
+      setErrorMessage(errMsg);
+      setShowErrorModal(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
@@ -358,7 +366,7 @@ export default function AddBlogForm({ initialBlog = null }) {
               {/* Section Heading */}
               <div>
                 <label className="block text-sm font-medium text-gray-900 mb-2">
-                  Section Heading
+                  Section Heading <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -375,7 +383,7 @@ export default function AddBlogForm({ initialBlog = null }) {
               {/* Section Text */}
               <div>
                 <label className="block text-sm font-medium text-gray-900 mb-2">
-                  Content Text
+                  Content Text <span className="text-red-500">*</span>
                 </label>
                 <Editor
                   value={section.text}
@@ -495,7 +503,10 @@ export default function AddBlogForm({ initialBlog = null }) {
       {/* Error Modal */}
       <ErrorModal
         isOpen={showErrorModal}
-        onClose={() => setShowErrorModal(false)}
+        onClose={() => {
+          setShowErrorModal(false);
+          setErrorMessage("");
+        }}
         title="Error"
         message={errorMessage}
         buttonText="Try Again"

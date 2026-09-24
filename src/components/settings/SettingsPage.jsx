@@ -1,23 +1,15 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
 import { MdOutlineStorefront } from "react-icons/md";
 import {
   FiMail,
   FiPhone,
   FiMapPin,
-  FiPackage,
-  FiCheckCircle,
-  FiUser,
-  FiCreditCard,
-  FiAlertTriangle,
-  FiStar,
   FiAlertCircle,
-  FiTruck,
-  FiLock,
-  FiLogOut,
-  FiChevronRight,
 } from "react-icons/fi";
+import { fetchSettings } from "@/store/slices/settingsSlice";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -28,6 +20,7 @@ const DEFAULTS = {
   contactNumber: "",
   officeNumber: "",
   address: "",
+  notificationsEnabled: true,
   notifications: {
     newOrder: true,
     orderShipped: true,
@@ -40,18 +33,6 @@ const DEFAULTS = {
   },
 };
 
-// Laid out in reading order for the two-column grid: left column, right column.
-const NOTIFICATIONS = [
-  { key: "newOrder", icon: FiPackage, title: "New Order", description: "Get notified when a new order is placed." },
-  { key: "orderShipped", icon: FiCheckCircle, title: "Order Shipped", description: "Get notified when an order is shipped." },
-  { key: "newCustomer", icon: FiUser, title: "New Customer", description: "Get notified when a new customer registers." },
-  { key: "paymentReceived", icon: FiCreditCard, title: "Payment Received", description: "Get notified when a payment is received." },
-  { key: "lowStock", icon: FiAlertTriangle, title: "Low Stock", description: "Get notified when stock is running low." },
-  { key: "customerReview", icon: FiStar, title: "Customer Review", description: "Get notified when a customer leaves a review." },
-  { key: "criticalStock", icon: FiAlertCircle, title: "Critical Stock", description: "Get notified when stock is critically low." },
-  { key: "deliveryDelay", icon: FiTruck, title: "Delivery Delay", description: "Get notified when a delivery is delayed." },
-];
-
 // The API stores only the toggles that were saved, so missing keys fall back to
 // the defaults rather than rendering as "off".
 const normalize = (data) => ({
@@ -60,6 +41,7 @@ const normalize = (data) => ({
   contactNumber: data?.contactNumber ?? "",
   officeNumber: data?.officeNumber ?? "",
   address: data?.address ?? "",
+  notificationsEnabled: data?.notificationsEnabled ?? true,
   notifications: { ...DEFAULTS.notifications, ...(data?.notifications || {}) },
 });
 
@@ -120,24 +102,8 @@ function Toggle({ checked, onChange, label, disabled }) {
   );
 }
 
-function SecurityCard({ icon: Icon, title, description, onClick }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex w-full items-center gap-4 rounded-xl border border-gray-200 bg-white p-5 text-left transition-colors hover:border-gray-300 hover:bg-gray-50"
-    >
-      <Icon aria-hidden="true" className="h-7 w-7 shrink-0 text-gray-800" />
-      <span className="min-w-0 flex-1">
-        <span className="block text-sm font-semibold text-gray-900">{title}</span>
-        <span className="mt-0.5 block text-sm text-gray-500">{description}</span>
-      </span>
-      <FiChevronRight aria-hidden="true" className="h-5 w-5 shrink-0 text-gray-400" />
-    </button>
-  );
-}
-
 export default function SettingsPage() {
+  const dispatch = useDispatch();
   const [saved, setSaved] = useState(DEFAULTS);
   const [form, setForm] = useState(DEFAULTS);
   const [loading, setLoading] = useState(true);
@@ -178,10 +144,19 @@ export default function SettingsPage() {
     return () => clearTimeout(t);
   }, [notice]);
 
-  const setField = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
+  const setField = (key) => (e) => {
+    let value = e.target.value;
 
-  const setNotification = (key) => (value) =>
-    setForm((f) => ({ ...f, notifications: { ...f.notifications, [key]: value } }));
+    if (key === "storeName") {
+      value = value.replace(/\b\w/g, (char) => char.toUpperCase());
+    } else if (key === "storeEmail") {
+      value = value.toLowerCase();
+    } else if (key === "contactNumber" || key === "officeNumber") {
+      value = value.replace(/\D/g, "").slice(0, 10);
+    }
+
+    setForm((f) => ({ ...f, [key]: value }));
+  };
 
   const handleCancel = () => {
     setForm(saved);
@@ -192,6 +167,8 @@ export default function SettingsPage() {
     setSaving(true);
     try {
       const token = localStorage.getItem("adminToken");
+      console.log("Saving settings with notificationsEnabled:", form.notificationsEnabled);
+
       const response = await fetch(`${API_URL}/api/admin/settings`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
@@ -200,11 +177,17 @@ export default function SettingsPage() {
       const body = await response.json();
       if (!response.ok) throw new Error(body?.message || "Failed to save settings");
 
+      console.log("Settings saved successfully, response:", body.data);
       const data = normalize(body.data);
       setSaved(data);
       setForm(data);
+
+      console.log("Dispatching fetchSettings to update Redux...");
+      dispatch(fetchSettings()).then(() => console.log("fetchSettings completed"));
+
       setNotice({ type: "success", text: "Settings saved. The storefront footer is updated." });
     } catch (error) {
+      console.error("Save error:", error);
       setNotice({ type: "error", text: error.message || "Failed to save settings" });
     } finally {
       setSaving(false);
@@ -279,48 +262,45 @@ export default function SettingsPage() {
         </p>
       </SectionCard>
 
-      <SectionCard title="Notification Preferences" subtitle="Choose what notifications you want to receive.">
-        <div className="grid grid-cols-1 gap-x-12 gap-y-6 md:grid-cols-2">
-          {NOTIFICATIONS.map(({ key, icon: Icon, title, description }) => (
-            <div key={key} className="flex items-center gap-4">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-gray-200 text-gray-700">
-                <Icon aria-hidden="true" className="h-5 w-5" />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block text-sm font-semibold text-gray-900">{title}</span>
-                <span className="mt-0.5 block text-xs text-gray-500">{description}</span>
-              </span>
-              <Toggle
-                checked={form.notifications[key]}
-                onChange={setNotification(key)}
-                label={title}
-                disabled={loading}
-              />
-            </div>
-          ))}
+      <SectionCard title="Notification Preferences" subtitle="Enable or disable all notifications.">
+        <div className="flex items-center gap-4">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-gray-200 text-gray-700">
+            <FiAlertCircle aria-hidden="true" className="h-5 w-5" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-sm font-semibold text-gray-900">Enable Notifications</span>
+            <span className="mt-0.5 block text-xs text-gray-500">Receive all notifications</span>
+          </span>
+          <Toggle
+            checked={form.notificationsEnabled}
+            onChange={async (newState) => {
+              setForm((f) => ({ ...f, notificationsEnabled: newState }));
+              setSaving(true);
+              try {
+                const token = localStorage.getItem("adminToken");
+                const response = await fetch(`${API_URL}/api/admin/notifications/settings`, {
+                  method: "PUT",
+                  headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                  body: JSON.stringify({ notificationsEnabled: newState }),
+                });
+                const body = await response.json();
+                if (!response.ok) throw new Error(body?.message || "Failed to save");
+
+                dispatch(fetchSettings());
+                setNotice({ type: "success", text: "Notification settings updated" });
+              } catch (error) {
+                setForm((f) => ({ ...f, notificationsEnabled: !newState }));
+                setNotice({ type: "error", text: error.message || "Failed to update notifications" });
+              } finally {
+                setSaving(false);
+              }
+            }}
+            label="Enable Notifications"
+            disabled={loading || saving}
+          />
         </div>
       </SectionCard>
 
-      <SectionCard title="Security" subtitle="Keep your account secure and protected.">
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-          {/* Neither has a backend endpoint yet, so they say so rather than
-              appearing to work. */}
-          <SecurityCard
-            icon={FiLock}
-            title="Change Password"
-            description="Update your admin account password."
-            onClick={() => setNotice({ type: "error", text: "Change Password is not available yet." })}
-          />
-          <SecurityCard
-            icon={FiLogOut}
-            title="Logout from All Devices"
-            description="Sign out of your account on all other devices."
-            onClick={() =>
-              setNotice({ type: "error", text: "Logout from All Devices is not available yet." })
-            }
-          />
-        </div>
-      </SectionCard>
     </div>
   );
 }
