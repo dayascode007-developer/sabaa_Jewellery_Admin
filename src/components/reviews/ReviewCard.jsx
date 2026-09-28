@@ -1,6 +1,6 @@
 "use client";
 
-export default function ReviewCard({ review, onAccept, onReject, loading }) {
+export default function ReviewCard({ review, onAccept, onReject, loading, filter = "pending" }) {
   const getStatusColor = (isApproved) => {
     return isApproved ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800";
   };
@@ -95,8 +95,8 @@ export default function ReviewCard({ review, onAccept, onReject, loading }) {
         </p>
       </div>
 
-      {/* Actions - Only show if not approved */}
-      {!review.is_approved && (
+      {/* Actions - Only show on pending tab */}
+      {filter === "pending" && (
         <div className="flex gap-2">
           <button
             onClick={() => onAccept(review.id)}
@@ -115,9 +115,15 @@ export default function ReviewCard({ review, onAccept, onReject, loading }) {
         </div>
       )}
 
-      {review.is_approved && (
+      {filter === "approved" && (
         <div className="p-2 bg-green-50 rounded text-center">
           <p className="text-xs text-green-700 font-medium">✓ Approved</p>
+        </div>
+      )}
+
+      {filter === "rejected" && (
+        <div className="p-2 bg-red-50 rounded text-center">
+          <p className="text-xs text-red-700 font-medium">✕ Rejected</p>
         </div>
       )}
     </div>

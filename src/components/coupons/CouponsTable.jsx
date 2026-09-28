@@ -21,6 +21,9 @@ export default function CouponsTable({ coupons, onEdit, onDelete, startIndex = 0
               Min. Purchase
             </th>
             <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+              Start Date
+            </th>
+            <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
               Expiry
             </th>
             <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
@@ -67,6 +70,11 @@ export default function CouponsTable({ coupons, onEdit, onDelete, startIndex = 0
                 </td>
                 <td className="px-6 py-4">
                   <p className="text-gray-700">
+                    {new Date(coupon.startDate || coupon.start_date).toLocaleDateString('en-GB')}
+                  </p>
+                </td>
+                <td className="px-6 py-4">
+                  <p className="text-gray-700">
                     {new Date(coupon.expiryDate || coupon.expiry_date).toLocaleDateString('en-GB')}
                   </p>
                 </td>
@@ -89,12 +97,14 @@ export default function CouponsTable({ coupons, onEdit, onDelete, startIndex = 0
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex gap-2">
-                    <button
-                      onClick={() => onEdit(coupon.id)}
-                      className="p-2 hover:bg-blue-50 rounded-lg text-blue-600 transition-colors cursor-pointer"
-                    >
-                      <MdEdit size={18} />
-                    </button>
+                    {coupon.status === "active" && (
+                      <button
+                        onClick={() => onEdit(coupon.id)}
+                        className="p-2 hover:bg-blue-50 rounded-lg text-blue-600 transition-colors cursor-pointer"
+                      >
+                        <MdEdit size={18} />
+                      </button>
+                    )}
                     <button
                       onClick={() => onDelete(coupon.id)}
                       className="p-2 hover:bg-red-50 rounded-lg text-red-600 transition-colors cursor-pointer"

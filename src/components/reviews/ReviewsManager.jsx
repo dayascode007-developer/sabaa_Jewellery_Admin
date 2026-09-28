@@ -60,18 +60,48 @@ export default function ReviewsManager() {
     dispatch(fetchReviews({ tab: filter, limit: 100, offset: 0 }));
   }, [filter, dispatch]);
 
-  // Handle approve - refresh the current tab
-  const handleAccept = (reviewId) => {
-    dispatch(approveReview(reviewId)).then(() => {
-      dispatch(fetchReviews({ tab: filter, limit: 100, offset: 0 }));
-    });
+  // Handle approve - update UI immediately and refresh tab counts
+  const handleAccept = async (reviewId) => {
+    try {
+      await dispatch(approveReview(reviewId)).unwrap();
+
+      // Update tab counts immediately
+      const [pendingResult, approvedResult, rejectedResult] = await Promise.all([
+        getReviewsApi("pending", 1, 0),
+        getReviewsApi("approved", 1, 0),
+        getReviewsApi("rejected", 1, 0),
+      ]);
+
+      setTabCounts({
+        pending: pendingResult.pagination?.total || 0,
+        approved: approvedResult.pagination?.total || 0,
+        rejected: rejectedResult.pagination?.total || 0,
+      });
+    } catch (error) {
+      console.error("Failed to approve review:", error);
+    }
   };
 
-  // Handle reject - refresh the current tab
-  const handleReject = (reviewId) => {
-    dispatch(rejectReview(reviewId)).then(() => {
-      dispatch(fetchReviews({ tab: filter, limit: 100, offset: 0 }));
-    });
+  // Handle reject - update UI immediately and refresh tab counts
+  const handleReject = async (reviewId) => {
+    try {
+      await dispatch(rejectReview(reviewId)).unwrap();
+
+      // Update tab counts immediately
+      const [pendingResult, approvedResult, rejectedResult] = await Promise.all([
+        getReviewsApi("pending", 1, 0),
+        getReviewsApi("approved", 1, 0),
+        getReviewsApi("rejected", 1, 0),
+      ]);
+
+      setTabCounts({
+        pending: pendingResult.pagination?.total || 0,
+        approved: approvedResult.pagination?.total || 0,
+        rejected: rejectedResult.pagination?.total || 0,
+      });
+    } catch (error) {
+      console.error("Failed to reject review:", error);
+    }
   };
 
   // Clear messages after 3 seconds
@@ -213,6 +243,7 @@ export default function ReviewsManager() {
               onAccept={handleAccept}
               onReject={handleReject}
               loading={actionLoading === review.id}
+              filter={filter}
             />
           ))}
         </div>
