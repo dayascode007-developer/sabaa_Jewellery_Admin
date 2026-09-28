@@ -142,7 +142,7 @@ export default function AddProductForm({ productId = null }) {
         content:
           "Head Office: Sabaa Jewel arts, 54, Gandhi nagar, vilvanagar, semmandalam, cuddalore 607001",
       },
-      { id: 3, content: "Contact Mobile: +91 7871900140" },
+      { id: 3, content: "Contact Mobile: +91 7871900355" },
     ],
   });
   const [nextDetailId, setNextDetailId] = useState({
