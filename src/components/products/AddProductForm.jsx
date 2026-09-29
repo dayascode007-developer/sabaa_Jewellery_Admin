@@ -25,6 +25,8 @@ import SuccessModal from "@/components/modals/SuccessModal";
 import ErrorModal from "@/components/modals/ErrorModal";
 import AddSymbolModal from "./AddSymbolModal";
 
+import TryOnPicker from "./TryOnPicker";
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 export default function AddProductForm({ productId = null }) {
@@ -101,6 +103,9 @@ export default function AddProductForm({ productId = null }) {
     returnExchangePolicy: "",
     addressContact: "",
     isPhotoRing: false,
+    // Which AR try-on model a customer previews this piece as. Empty for the
+    // many products that have none.
+    arModelId: "",
   });
 
   const [mainImage, setMainImage] = useState(null);
@@ -260,6 +265,7 @@ export default function AddProductForm({ productId = null }) {
             returnExchangePolicy: product.return_exchange_policy || "",
             addressContact: product.address_contact || "",
             isPhotoRing: product.is_photo_ring || false,
+            arModelId: product.ar_model_id || "",
           });
 
           setMainImage(product.main_image || null);
@@ -575,6 +581,7 @@ export default function AddProductForm({ productId = null }) {
       submitData.append("limitPurchases", formData.limitPurchases);
       submitData.append("enableReviews", formData.enableReviews);
       submitData.append("isPhotoRing", formData.isPhotoRing);
+      submitData.append("arModelId", formData.arModelId);
       submitData.append("weight", formData.weight);
       submitData.append("length", formData.length);
       submitData.append("width", formData.width);
@@ -974,6 +981,14 @@ export default function AddProductForm({ productId = null }) {
                   </span>
                 </label>
               </div>
+
+              {/* Which piece the customer sees on their own camera. Above
+                  the photographs because it is a fact about the product, not
+                  another picture of it. */}
+              <TryOnPicker
+                value={formData.arModelId}
+                onChange={(id) => setFormData((prev) => ({ ...prev, arModelId: id }))}
+              />
 
               {/* Images Section */}
               <div>
