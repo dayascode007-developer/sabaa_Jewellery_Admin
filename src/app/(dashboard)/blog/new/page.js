@@ -6,6 +6,8 @@ import { useSelector, useDispatch } from "react-redux";
 import AddBlogForm from "@/components/blog/AddBlogForm";
 import { fetchBlogById, clearCurrentBlog } from "@/store/slices/blogsSlice";
 
+export const dynamic = "force-dynamic";
+
 export default function NewBlog() {
   const searchParams = useSearchParams();
   const editId = searchParams.get("edit");
