@@ -13,6 +13,7 @@ const lanAddresses = Object.values(os.networkInterfaces())
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'standalone',
   // was: allowedDevOrigins: ['192.168.29.163', 'localhost'],
   allowedDevOrigins: [...new Set(["192.168.29.163", "localhost", ...lanAddresses])],
 };
