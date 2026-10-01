@@ -12,6 +12,7 @@ export const fetchCustomers = createAsyncThunk(
         limit,
         offset,
         ...(filters.search && { search: filters.search }),
+        ...(filters.month && { month: filters.month }),
       });
 
       const response = await fetch(
@@ -70,6 +71,7 @@ export const fetchCustomersForDownload = createAsyncThunk(
         limit: 10000,
         offset: 0,
         ...(filters.search && { search: filters.search }),
+        ...(filters.month && { month: filters.month }),
       });
 
       const response = await fetch(
