@@ -12,10 +12,13 @@ import SuccessModal from "@/components/modals/SuccessModal";
 import ErrorModal from "@/components/modals/ErrorModal";
 import { createBlog, updateBlog } from "@/store/slices/blogsSlice";
 
-const Editor = dynamic(() => import("@tinymce/tinymce-react").then(mod => mod.Editor), {
-  ssr: false,
-  loading: () => <p>Loading editor...</p>
-});
+const Editor = dynamic(
+  () => import("@tinymce/tinymce-react").then((mod) => mod.Editor),
+  {
+    ssr: false,
+    loading: () => <p>Loading editor...</p>,
+  }
+);
 
 export default function AddBlogForm({ initialBlog = null }) {
   const router = useRouter();
@@ -30,15 +33,21 @@ export default function AddBlogForm({ initialBlog = null }) {
   const [formData, setFormData] = useState({
     title: initialBlog?.title || "",
     description: initialBlog?.description || "",
-    publishedDate: initialBlog?.publishedDate ? new Date(initialBlog.publishedDate) : new Date(),
+    publishedDate: initialBlog?.publishedDate
+      ? new Date(initialBlog.publishedDate)
+      : new Date(),
   });
 
-  const [mainImage, setMainImage] = useState(initialBlog?.main_image || initialBlog?.mainImage || null);
+  const [mainImage, setMainImage] = useState(
+    initialBlog?.main_image || initialBlog?.mainImage || null
+  );
   const [contentSections, setContentSections] = useState(
     initialBlog?.content || [{ id: 1, heading: "", text: "", image: null }]
   );
   const [nextSectionId, setNextSectionId] = useState(
-    initialBlog?.content?.length ? Math.max(...initialBlog.content.map(c => c.id)) + 1 : 2
+    initialBlog?.content?.length
+      ? Math.max(...initialBlog.content.map((c) => c.id)) + 1
+      : 2
   );
 
   const handleInputChange = (e) => {
@@ -117,7 +126,7 @@ export default function AddBlogForm({ initialBlog = null }) {
     setShowSuccessModal(false);
     router.push("/blog");
   };
-
+  //USBMIT
   const handleSubmit = async (e) => {
     e.preventDefault();
     const errors = {};
@@ -152,7 +161,9 @@ export default function AddBlogForm({ initialBlog = null }) {
 
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
-      const errMsg = Object.values(errors).find(e => e) || "Please fill in all required fields";
+      const errMsg =
+        Object.values(errors).find((e) => e) ||
+        "Please fill in all required fields";
       setErrorMessage(errMsg);
       setShowErrorModal(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -160,9 +171,10 @@ export default function AddBlogForm({ initialBlog = null }) {
     }
 
     setFieldErrors({});
-    const publishedDateStr = formData.publishedDate instanceof Date
-      ? formData.publishedDate.toISOString().split("T")[0]
-      : formData.publishedDate;
+    const publishedDateStr =
+      formData.publishedDate instanceof Date
+        ? formData.publishedDate.toISOString().split("T")[0]
+        : formData.publishedDate;
 
     const formDataWithFiles = new FormData();
     formDataWithFiles.append("title", formData.title);
@@ -213,7 +225,9 @@ export default function AddBlogForm({ initialBlog = null }) {
             {isEditing ? "Edit Blog" : "Add New Blog"}
           </h1>
           <p className="text-gray-600 mt-1">
-            {isEditing ? "Update your blog post" : "Create and publish a new blog post"}
+            {isEditing
+              ? "Update your blog post"
+              : "Create and publish a new blog post"}
           </p>
         </div>
       </div>
@@ -264,7 +278,9 @@ export default function AddBlogForm({ initialBlog = null }) {
               style={{ "--tw-ring-color": "var(--primary)" }}
             />
             {fieldErrors.description && (
-              <p className="text-red-500 text-sm mt-1">{fieldErrors.description}</p>
+              <p className="text-red-500 text-sm mt-1">
+                {fieldErrors.description}
+              </p>
             )}
           </div>
 
@@ -273,13 +289,19 @@ export default function AddBlogForm({ initialBlog = null }) {
             <label className="block text-sm font-medium text-gray-900 mb-2">
               Main Image <span className="text-red-500">*</span>
             </label>
-            <div className={`border-2 border-dashed rounded-lg p-6 text-center ${
+            <div
+              className={`border-2 border-dashed rounded-lg p-6 text-center ${
                 fieldErrors.mainImage ? "border-red-500" : "border-gray-300"
-              }`}>
+              }`}
+            >
               {mainImage ? (
                 <div className="relative inline-block">
                   <img
-                    src={mainImage instanceof File ? URL.createObjectURL(mainImage) : mainImage}
+                    src={
+                      mainImage instanceof File
+                        ? URL.createObjectURL(mainImage)
+                        : mainImage
+                    }
                     alt="Main"
                     className="h-40 w-full object-cover rounded-lg max-w-sm"
                   />
@@ -312,7 +334,9 @@ export default function AddBlogForm({ initialBlog = null }) {
               )}
             </div>
             {fieldErrors.mainImage && (
-              <p className="text-red-500 text-sm mt-1">{fieldErrors.mainImage}</p>
+              <p className="text-red-500 text-sm mt-1">
+                {fieldErrors.mainImage}
+              </p>
             )}
           </div>
 
@@ -334,10 +358,11 @@ export default function AddBlogForm({ initialBlog = null }) {
               style={{ "--tw-ring-color": "var(--primary)" }}
             />
             {fieldErrors.publishedDate && (
-              <p className="text-red-500 text-sm mt-1">{fieldErrors.publishedDate}</p>
+              <p className="text-red-500 text-sm mt-1">
+                {fieldErrors.publishedDate}
+              </p>
             )}
           </div>
-
         </div>
 
         {/* Content Sections */}
@@ -430,7 +455,11 @@ export default function AddBlogForm({ initialBlog = null }) {
                   {section.image ? (
                     <div className="relative inline-block">
                       <img
-                        src={section.image instanceof File ? URL.createObjectURL(section.image) : section.image}
+                        src={
+                          section.image instanceof File
+                            ? URL.createObjectURL(section.image)
+                            : section.image
+                        }
                         alt="Section"
                         className="h-32 w-48 object-cover rounded"
                       />
@@ -495,8 +524,16 @@ export default function AddBlogForm({ initialBlog = null }) {
       <SuccessModal
         isOpen={showSuccessModal}
         onClose={handleSuccessClose}
-        title={isEditing ? "Blog Updated Successfully" : "Blog Published Successfully"}
-        message={isEditing ? "Your blog post has been updated." : "Your blog post has been published and is now live."}
+        title={
+          isEditing
+            ? "Blog Updated Successfully"
+            : "Blog Published Successfully"
+        }
+        message={
+          isEditing
+            ? "Your blog post has been updated."
+            : "Your blog post has been published and is now live."
+        }
         buttonText="View Blog"
       />
 

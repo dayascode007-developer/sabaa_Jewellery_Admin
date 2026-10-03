@@ -23,6 +23,7 @@ const apiUrl =
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   env: { NEXT_PUBLIC_API_URL: apiUrl },
+  output: 'standalone',
   // was: allowedDevOrigins: ['192.168.29.163', 'localhost'],
   allowedDevOrigins: [...new Set(["192.168.29.163", "localhost", ...lanAddresses])],
 };

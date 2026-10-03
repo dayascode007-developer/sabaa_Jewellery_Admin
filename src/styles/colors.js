@@ -1,5 +1,5 @@
 export const colors = {
-  primary: "#430121", // Primary brand color
+  primary: "#430121", // Primary brand colord
   primaryLight: "#5D1B5C",
   primaryDark: "#2D000F",
   secondary: "#F59E0B", // Orange accent

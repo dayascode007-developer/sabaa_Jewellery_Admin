@@ -508,12 +508,12 @@ export default function OrdersList() {
                             onClick={() => setSelectedOrder(order)}
                           />
                         </div>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-sm  font-bold text-gray-700">
                           {order.customer.name}
                         </p>
                       </td>
                       <td className="px-6 py-4">
-                        <p className="text-sm font-medium text-gray-900">
+                        <p className="text-sm font-medium text text-gray-900">
                           {order.purchase_id}
                         </p>
                       </td>
