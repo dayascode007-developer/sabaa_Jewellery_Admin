@@ -28,6 +28,26 @@ export default function AddCouponModal({ isOpen, onClose, coupon }) {
   });
   const [fieldErrors, setFieldErrors] = useState({});
 
+  // Midnight, not "now": DatePicker compares full timestamps, so using new Date()
+  // directly would grey out today itself for the rest of the day.
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // A coupon that already started in the past keeps its own saved date
+  // selectable — otherwise opening this modal to change Max Uses would silently
+  // force the dates forward. New coupons cannot be dated before today.
+  const savedStart = coupon?.start_date ? new Date(coupon.start_date) : null;
+  const savedExpiry = coupon?.expiry_date ? new Date(coupon.expiry_date) : null;
+
+  const minStartDate = savedStart && savedStart < today ? savedStart : today;
+
+  // Expiry is bounded by BOTH rules: never in the past, and never before the
+  // start date — so a coupon cannot be saved expiring before it begins.
+  const expiryFloor =
+    formData.startDate && formData.startDate > today ? formData.startDate : today;
+  const minExpiryDate =
+    savedExpiry && savedExpiry < expiryFloor ? savedExpiry : expiryFloor;
+
   useEffect(() => {
     if (!isOpen) {
       setIsSubmitted(false);
@@ -287,6 +307,7 @@ export default function AddCouponModal({ isOpen, onClose, coupon }) {
                   }
                 }}
                 strictParsing={false}
+                minDate={minStartDate}
                 dateFormat="dd/MM/yyyy"
                 placeholderText="dd/mm/yyyy"
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-black ${
@@ -334,6 +355,7 @@ export default function AddCouponModal({ isOpen, onClose, coupon }) {
                     e.target.value = formatted;
                   }
                 }}
+                minDate={minExpiryDate}
                 dateFormat="dd/MM/yyyy"
                 placeholderText="dd/mm/yyyy"
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-black ${

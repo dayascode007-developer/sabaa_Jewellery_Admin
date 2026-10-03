@@ -144,14 +144,19 @@ export default function TryOnPicker({ value, onChange }) {
               <label className="mb-1 block text-sm font-medium text-gray-900">
                 {current.groupLabel}
               </label>
+              {/* text-black on the select and on every option: the select
+                  inherited its colour from the surrounding card, and the
+                  options are drawn by the OS, which does not inherit it at all. */}
               <select
                 value={group}
                 onChange={(e) => setGroup(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-black"
               >
-                <option value="">All</option>
+                <option className="text-black" value="">
+                  All
+                </option>
                 {current.groups.map((option) => (
-                  <option key={option.id} value={option.id}>
+                  <option className="text-black" key={option.id} value={option.id}>
                     {option.label}
                   </option>
                 ))}
