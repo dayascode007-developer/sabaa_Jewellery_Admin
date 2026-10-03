@@ -89,7 +89,7 @@ export default function AdvancedSearchFilter({
                   type="text"
                   placeholder="Search by title or SKU..."
                   value={filters.search}
-                  onChange={(e) => handleFilterChange("search", e.target.value)}
+                  onChange={(e) => handleFilterChange("search", e.target.value.trim())}
                   className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 text-sm text-black placeholder-gray-400 hover:border-gray-400 transition-colors cursor-text"
                   style={{ "--tw-ring-color": "var(--primary)" }}
                 />
