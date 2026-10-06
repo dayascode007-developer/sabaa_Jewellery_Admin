@@ -309,7 +309,7 @@ export default function ProductsTable({ products }) {
                   </div>
                 </td>
                 <td className="px-6 py-4">
-                  <p className="text-sm text-gray-600">{product.category}</p>
+                  <p className="text-sm text-gray-600">{product.category_name || "—"}</p>
                 </td>
                 <td className="px-6 py-4">
                   <p className="text-sm text-gray-600">{product.date}</p>
