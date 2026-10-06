@@ -718,12 +718,16 @@ export default function AddProductForm({ productId = null }) {
 
   const handleSuccessModalClose = () => {
     setShowSuccessModal(false);
-    // Wait for products to be fetched before navigating
-    dispatch(fetchProducts()).then(() => {
-      setTimeout(() => {
+
+    setTimeout(() => {
+      dispatch(fetchProducts()).then(() => {
         router.push("/products");
-      }, 300);
-    });
+        // Auto-refresh page after navigating to ensure data loads correctly
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500); // Increased delay to avoid navigation conflict
+      });
+    }, 1000); // Wait 1 second for backend to commit data
   };
 
   return (
