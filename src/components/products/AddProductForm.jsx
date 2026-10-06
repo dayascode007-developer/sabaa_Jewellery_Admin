@@ -283,6 +283,15 @@ export default function AddProductForm({ productId = null }) {
             arModelId: product.ar_model_id || "",
           });
 
+          // Fetch categories data for edit mode
+          if (product.category_id) {
+            dispatch(fetchSubMainCategories());
+            dispatch(fetchSubCategoriesByCategory(product.category_id));
+          }
+          if (subMainCategoryId) {
+            dispatch(fetchSubCategoriesBySubMainCategory(subMainCategoryId));
+          }
+
           setMainImage(product.main_image || null);
 
           if (
@@ -360,7 +369,8 @@ export default function AddProductForm({ productId = null }) {
   useEffect(() => {
     if (formData.subMainCategory) {
       dispatch(fetchSubCategoriesBySubMainCategory(formData.subMainCategory));
-      if (!isEditMode) {
+      // Clear subcategories only when user changes sub main category (not on initial load in edit mode)
+      if (!isEditMode || formData.subcategories.length === 0) {
         setFormData((prev) => ({ ...prev, subcategories: [] }));
       }
     }
@@ -684,18 +694,21 @@ export default function AddProductForm({ productId = null }) {
             setShowErrorModal(true);
           });
       } else {
+        // Show success modal immediately (optimistic update)
+        setShowSuccessModal(true);
+
         dispatch(createProduct(submitData))
           .then((result) => {
             // Check if action was rejected (error)
             if (result.type === createProduct.rejected.type) {
+              setShowSuccessModal(false);
               setErrorMessage(result.payload || "Failed to create product");
               setShowErrorModal(true);
-            } else {
-              // Success
-              setShowSuccessModal(true);
             }
+            // If successful, success modal is already shown
           })
           .catch((error) => {
+            setShowSuccessModal(false);
             setErrorMessage(error.message || "Failed to create product");
             setShowErrorModal(true);
           });
@@ -705,10 +718,12 @@ export default function AddProductForm({ productId = null }) {
 
   const handleSuccessModalClose = () => {
     setShowSuccessModal(false);
-    dispatch(fetchProducts());
-    setTimeout(() => {
-      router.push("/products");
-    }, 300);
+    // Wait for products to be fetched before navigating
+    dispatch(fetchProducts()).then(() => {
+      setTimeout(() => {
+        router.push("/products");
+      }, 300);
+    });
   };
 
   return (
@@ -941,9 +956,10 @@ export default function AddProductForm({ productId = null }) {
                                 s.sub_main_category_id ===
                                 parseInt(formData.subMainCategory)
                             );
-                            const availableOptions = isEditMode
-                              ? formData.subcategories
-                              : filteredSubCategories;
+                            // In edit mode, use formData.subcategories as fallback while Redux loads
+                            const availableOptions = filteredSubCategories.length > 0
+                              ? filteredSubCategories
+                              : (isEditMode && formData.subcategories.length > 0 ? formData.subcategories : []);
 
                             return availableOptions.length > 0 ||
                               filteredSubCategories.length > 0 ? (
@@ -959,10 +975,7 @@ export default function AddProductForm({ productId = null }) {
                                       : ""
                                   }
                                   onChange={(e) => {
-                                    const allOptions = isEditMode
-                                      ? formData.subcategories
-                                      : filteredSubCategories;
-                                    const selectedSubCat = allOptions.find(
+                                    const selectedSubCat = filteredSubCategories.find(
                                       (s) => s.id === parseInt(e.target.value)
                                     );
                                     setFormData((prev) => ({

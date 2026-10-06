@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { MdOpenInNew } from "react-icons/md";
 import { fetchRealtimeAnalytics } from "@/store/slices/analyticsRealtimeSlice";
 
 export default function RealtimeAnalytics() {
@@ -87,6 +88,15 @@ export default function RealtimeAnalytics() {
             </svg>
             {autoRefresh ? "Live" : "Paused"}
           </button>
+          <a
+            href="https://analytics.google.com/analytics/web/#/a410348721p556935475/reports/intelligenthome"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-4 py-2 rounded text-sm font-medium bg-[#430121] text-white hover:bg-[#2D000F] transition-colors flex items-center gap-2"
+          >
+            <MdOpenInNew className="w-4 h-4" />
+            View Analytics
+          </a>
         </div>
       </div>
 

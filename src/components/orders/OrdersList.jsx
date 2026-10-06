@@ -198,6 +198,14 @@ export default function OrdersList() {
 
       const fileName = `Orders_${new Date().getTime()}.xlsx`;
       XLSX.writeFile(workbook, fileName);
+
+      // Clear selected records after successful export
+      setSelectedRecords(new Set());
+
+      // Auto-refresh page after export
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
     } catch (error) {
       console.error("Download error:", error);
       alert("Failed to download orders");
