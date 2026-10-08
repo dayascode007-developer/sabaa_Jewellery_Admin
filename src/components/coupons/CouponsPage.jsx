@@ -52,7 +52,6 @@ export default function CouponsPage() {
         setShowSuccessModal(true);
         setDeletingId(null);
       } catch (err) {
-        console.error("Error deleting coupon:", err);
         setShowDeleteModal(false);
         setDeletingId(null);
       }

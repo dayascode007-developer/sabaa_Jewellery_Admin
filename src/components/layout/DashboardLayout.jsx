@@ -26,7 +26,6 @@ export default function DashboardLayout({ children }) {
   // Redirect to login if not authenticated (only after hydration)
   useEffect(() => {
     if (isHydrated && !isAuthenticated) {
-      console.log("🚀 Not authenticated, redirecting to login...");
       router.push("/login");
     }
   }, [isHydrated, isAuthenticated, router]);

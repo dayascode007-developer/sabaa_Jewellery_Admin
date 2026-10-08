@@ -48,7 +48,6 @@ export default function ReviewsManager() {
           rejected: rejectedResult.pagination?.total || 0,
         });
       } catch (error) {
-        console.error("Failed to fetch tab counts:", error);
       }
     };
 
@@ -78,7 +77,6 @@ export default function ReviewsManager() {
         rejected: rejectedResult.pagination?.total || 0,
       });
     } catch (error) {
-      console.error("Failed to approve review:", error);
     }
   };
 
@@ -100,7 +98,6 @@ export default function ReviewsManager() {
         rejected: rejectedResult.pagination?.total || 0,
       });
     } catch (error) {
-      console.error("Failed to reject review:", error);
     }
   };
 

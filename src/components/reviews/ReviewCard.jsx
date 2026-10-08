@@ -91,7 +91,7 @@ export default function ReviewCard({ review, onAccept, onReject, loading, filter
       {/* Date */}
       <div className="mb-3">
         <p className="text-xs text-gray-500">
-          {new Date(review.created_at).toLocaleDateString()}
+          {new Date(review.created_at).toLocaleDateString("en-GB")}
         </p>
       </div>
 

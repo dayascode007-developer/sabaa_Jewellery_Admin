@@ -129,7 +129,6 @@ export default function CustomersList() {
 
       XLSX.writeFile(workbook, fileName);
     } catch (error) {
-      console.error("Download error:", error);
       alert("Failed to download customers");
     }
   };

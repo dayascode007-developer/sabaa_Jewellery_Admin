@@ -83,7 +83,6 @@ export default function AdvancedSearchFilter({
         const data = await response.json();
         setAvailableProvidersData(data.data || []);
       } catch (error) {
-        console.error("Failed to fetch couriers:", error);
       }
     };
 

@@ -347,7 +347,6 @@ export default function AddProductForm({ productId = null }) {
         sessionStorage.removeItem("editProductData");
         router.replace(window.location.pathname);
       } catch (e) {
-        console.error("Failed to load product data:", e);
       }
     }
   }, [router]);

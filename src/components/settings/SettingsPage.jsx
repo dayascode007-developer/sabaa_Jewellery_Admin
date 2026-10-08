@@ -167,7 +167,6 @@ export default function SettingsPage() {
     setSaving(true);
     try {
       const token = localStorage.getItem("adminToken");
-      console.log("Saving settings with notificationsEnabled:", form.notificationsEnabled);
 
       const response = await fetch(`${API_URL}/api/admin/settings`, {
         method: "PUT",
@@ -177,17 +176,13 @@ export default function SettingsPage() {
       const body = await response.json();
       if (!response.ok) throw new Error(body?.message || "Failed to save settings");
 
-      console.log("Settings saved successfully, response:", body.data);
       const data = normalize(body.data);
       setSaved(data);
       setForm(data);
 
-      console.log("Dispatching fetchSettings to update Redux...");
-      dispatch(fetchSettings()).then(() => console.log("fetchSettings completed"));
 
       setNotice({ type: "success", text: "Settings saved. The storefront footer is updated." });
     } catch (error) {
-      console.error("Save error:", error);
       setNotice({ type: "error", text: error.message || "Failed to save settings" });
     } finally {
       setSaving(false);

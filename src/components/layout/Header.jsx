@@ -35,8 +35,6 @@ export default function Header({ isCollapsed, pathname }) {
   // Fetch settings
   useEffect(() => {
     if (token && isHydrated) {
-      console.log("Fetching settings...");
-      dispatch(fetchSettings()).then(() => console.log("Settings fetched, notificationsEnabled:", notificationsEnabled));
     }
   }, [token, isHydrated, dispatch, notificationsEnabled]);
 
@@ -160,7 +158,7 @@ export default function Header({ isCollapsed, pathname }) {
             <FaChevronDown className="w-3 h-3 text-gray-500" />
           </button>
 
-          {/* Dropdown Menu */}
+          {/* Dropdown Menu - Click only */}
           {isDropdownOpen && (
             <div className="absolute top-full right-0 mt-2 z-50">
               <UserDropdown />

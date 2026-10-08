@@ -31,7 +31,6 @@ export default function EditProductModal({ isOpen, onClose, product }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Updating product:", formData);
     onClose();
   };
 

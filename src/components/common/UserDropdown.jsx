@@ -23,11 +23,9 @@ export default function UserDropdown() {
         })
         .catch((error) => {
           // Log error silently
-          console.error('Logout error:', error);
           // Don't show alert, just log to console
         });
     } catch (error) {
-      console.error('Logout error:', error);
       // Silently fail
     }
   };
@@ -38,29 +36,28 @@ export default function UserDropdown() {
         bg-white
         border border-gray-200
         rounded-lg shadow-md
-        w-36 h-12
+        w-36
         z-50
         animate-in fade-in slide-in-from-top-2
         duration-200
-        flex items-center
+        overflow-hidden
       "
       role="menu"
       aria-orientation="vertical"
     >
-      {/* Logout Button - Compact */}
+      {/* Logout Button */}
       <button
         onClick={handleLogout}
         disabled={isLoading}
         className="
-          w-full h-full px-3 py-2 text-left
+          w-full px-4 py-3 text-left
           text-sm text-red-600
           hover:bg-red-50
           active:bg-red-100
           transition-colors duration-150
-          flex items-center gap-2
+          flex items-center gap-3
           disabled:opacity-50 disabled:cursor-not-allowed
           focus:outline-none
-          rounded-lg
         "
         role="menuitem"
       >

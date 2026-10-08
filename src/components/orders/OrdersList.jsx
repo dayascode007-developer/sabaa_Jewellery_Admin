@@ -104,17 +104,15 @@ export default function OrdersList() {
         refunded: data.counts.refunded || 0,
       });
     } catch (error) {
-      console.error("Failed to fetch status counts:", error);
+      // Failed to fetch status counts
     }
   };
 
   // Fetch orders on mount and when filters/pagination changes
   useEffect(() => {
     const offset = (currentPage - 1) * ITEMS_PER_PAGE;
-    console.log("📦 Fetching orders...", { offset, filters, currentPage });
     dispatch(fetchOrders({ limit: ITEMS_PER_PAGE, offset, filters }));
     fetchStatusCounts();
-    console.log("📦 Orders loaded! Count:", orders.length);
   }, [dispatch, currentPage, filters, orders.length]);
 
   const formatCurrency = (amount) => {
@@ -207,7 +205,6 @@ export default function OrdersList() {
         window.location.reload();
       }, 500);
     } catch (error) {
-      console.error("Download error:", error);
       alert("Failed to download orders");
     } finally {
       setIsExporting(false);
@@ -216,15 +213,9 @@ export default function OrdersList() {
 
   const handleImportExcel = async (file) => {
     try {
-      console.log("📊 Excel import started...", file.name);
       const result = await dispatch(importOrdersExcel(file));
-      console.log("📊 Excel import result:", result);
 
       if (result.payload) {
-        console.log(
-          "✅ Import success! Updated count:",
-          result.payload.updatedCount
-        );
         // Show success modal immediately
         setSuccessModal({
           isOpen: true,
@@ -236,11 +227,9 @@ export default function OrdersList() {
         dispatch(fetchOrders({ limit: ITEMS_PER_PAGE, offset, filters }));
         fetchStatusCounts();
       } else if (result.payload === undefined && result.error) {
-        console.error("❌ Import failed:", result.error.message);
         alert(`❌ Import failed: ${result.error.message}`);
       }
     } catch (error) {
-      console.error("❌ Import error:", error);
       alert("Failed to import orders");
     }
   };
@@ -350,7 +339,6 @@ export default function OrdersList() {
               <button
                 key={status.key}
                 onClick={() => {
-                  console.log("🔵 Status filter clicked:", status.key);
                   setActiveStatusFilter(status.key);
                   setFilters({ status: status.key });
                   setCurrentPage(1);
@@ -388,7 +376,7 @@ export default function OrdersList() {
           )}
 
           {/* Orders Table */}
-          <div className="bg-white rounded-lg shadow-sm">
+          <div className="bg-white rounded-lg shadow-sm relative">
             {/* Header with Pagination */}
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
               <h2 className="text-lg font-semibold text-gray-900">
@@ -521,9 +509,9 @@ export default function OrdersList() {
                         </p>
                       </td>
                       <td className="px-6 py-4">
-                        <p className="text-sm font-medium text text-gray-900">
+                        <span className="px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
                           {order.purchase_id}
-                        </p>
+                        </span>
                       </td>
                       <td className="px-6 py-4">
                         <p className="text-sm text-gray-600">

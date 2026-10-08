@@ -8,11 +8,9 @@ export const fetchSettings = createAsyncThunk(
     try {
       const token = localStorage.getItem("adminToken");
       if (!token) {
-        console.error("No admin token found");
         return rejectWithValue("No admin token found");
       }
 
-      console.log("Fetching from URL:", `${API_URL}/api/admin/settings`);
       const response = await fetch(`${API_URL}/api/admin/notifications/settings`, {
         method: "GET",
         headers: {
@@ -23,15 +21,12 @@ export const fetchSettings = createAsyncThunk(
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        console.error("Settings fetch error - status:", response.status, "data:", errorData);
         throw new Error(errorData?.message || `HTTP ${response.status}: Failed to fetch settings`);
       }
 
       const data = await response.json();
-      console.log("Settings fetched successfully:", data.data);
       return data.data;
     } catch (error) {
-      console.error("Settings thunk error:", error.message);
       return rejectWithValue(error.message || "Failed to fetch settings");
     }
   }

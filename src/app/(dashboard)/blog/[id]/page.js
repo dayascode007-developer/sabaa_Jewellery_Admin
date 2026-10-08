@@ -29,7 +29,6 @@ export default function BlogDetail({ params }) {
       await dispatch(deleteBlog(id)).unwrap();
       router.push("/blog");
     } catch (error) {
-      console.error("Failed to delete blog:", error);
     }
   };
 
