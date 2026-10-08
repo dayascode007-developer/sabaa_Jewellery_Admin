@@ -124,7 +124,11 @@ export default function AddProductForm({ productId = null }) {
       { id: 4, content: "Both - male, female" },
     ],
     cleaningPolishing: [
-      { id: 1, content: "Use viboothi powder with water drops to clean ring" },
+      {
+        id: 1,
+        content:
+          "Use vibhuthi powder/ash/colgate powder with water drops to clean ring",
+      },
     ],
     usageColorGuarantee: [
       {
@@ -135,12 +139,18 @@ export default function AddProductForm({ productId = null }) {
       { id: 2, content: "Occasional usage will reduce ring polish" },
     ],
     returnExchangePolicy: [
+      { id: 1, content: "No Return or Exchange ." },
       {
-        id: 1,
+        id: 2,
         content:
-          "Our return and exchange policy allows returns within 30 days of purchase for unused items.",
+          "We do not accept returns or exchanges. Kindly ensure you select the correct product and size before placing your order.",
       },
-      { id: 2, content: "Please contact us for exchange requests." },
+      { id: 3, content: "Damaged or Incorrect Items" },
+      {
+        id: 4,
+        content:
+          "Items In case you receive a damaged or incorrect item, please share a clear unboxing video (without any cuts).",
+      },
     ],
     addressContact: [
       { id: 1, content: "Our Store located in Tamilnadu & Kerala" },
@@ -156,7 +166,7 @@ export default function AddProductForm({ productId = null }) {
     productDetails: 5,
     cleaningPolishing: 2,
     usageColorGuarantee: 3,
-    returnExchangePolicy: 3,
+    returnExchangePolicy: 5,
     addressContact: 4,
   });
 
@@ -346,8 +356,7 @@ export default function AddProductForm({ productId = null }) {
 
         sessionStorage.removeItem("editProductData");
         router.replace(window.location.pathname);
-      } catch (e) {
-      }
+      } catch (e) {}
     }
   }, [router]);
 
@@ -960,9 +969,13 @@ export default function AddProductForm({ productId = null }) {
                                 parseInt(formData.subMainCategory)
                             );
                             // In edit mode, use formData.subcategories as fallback while Redux loads
-                            const availableOptions = filteredSubCategories.length > 0
-                              ? filteredSubCategories
-                              : (isEditMode && formData.subcategories.length > 0 ? formData.subcategories : []);
+                            const availableOptions =
+                              filteredSubCategories.length > 0
+                                ? filteredSubCategories
+                                : isEditMode &&
+                                  formData.subcategories.length > 0
+                                ? formData.subcategories
+                                : [];
 
                             return availableOptions.length > 0 ||
                               filteredSubCategories.length > 0 ? (
@@ -978,9 +991,10 @@ export default function AddProductForm({ productId = null }) {
                                       : ""
                                   }
                                   onChange={(e) => {
-                                    const selectedSubCat = filteredSubCategories.find(
-                                      (s) => s.id === parseInt(e.target.value)
-                                    );
+                                    const selectedSubCat =
+                                      filteredSubCategories.find(
+                                        (s) => s.id === parseInt(e.target.value)
+                                      );
                                     setFormData((prev) => ({
                                       ...prev,
                                       subcategories: selectedSubCat
@@ -1492,7 +1506,7 @@ export default function AddProductForm({ productId = null }) {
                     style={{ accentColor: "var(--primary)" }}
                   />
                   <span className="text-sm font-medium text-gray-900">
-                    Photo Ring Product (Real Photo Ring)
+                    Photo Ring Product (Real Photo Ring & Laser Photo Ring)
                   </span>
                 </label>
               </div>

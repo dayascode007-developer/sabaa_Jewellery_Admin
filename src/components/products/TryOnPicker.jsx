@@ -62,7 +62,7 @@ export default function TryOnPicker({ value, onChange }) {
 
   const current = catalogue?.find((entry) => entry.mode === mode) ?? null;
   const models = current
-    ? current.models.filter((model) => !group || model.group === group)
+    ? current.models.filter((model) => !group || (model.group && model.group.startsWith(group)))
     : [];
 
   if (error) {
