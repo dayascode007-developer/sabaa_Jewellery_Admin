@@ -35,6 +35,8 @@ export const fetchProducts = createAsyncThunk(
         offset,
         ...(filters.search && { search: filters.search }),
         ...(filters.category && { category: filters.category }),
+        ...(filters.subMainCategory && { subMainCategory: filters.subMainCategory }),
+        ...(filters.subCategory && { subCategory: filters.subCategory }),
         ...(filters.minPrice && { minPrice: filters.minPrice }),
         ...(filters.maxPrice && { maxPrice: filters.maxPrice }),
         ...(filters.stockStatus && { stockStatus: filters.stockStatus }),

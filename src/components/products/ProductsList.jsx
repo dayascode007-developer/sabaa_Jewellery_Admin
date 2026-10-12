@@ -2,11 +2,17 @@
 
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { MdEdit, MdDelete, MdChevronLeft, MdChevronRight } from "react-icons/md";
+import {
+  MdEdit,
+  MdDelete,
+  MdChevronLeft,
+  MdChevronRight,
+} from "react-icons/md";
 
 import Link from "next/link";
 import { fetchProducts, deleteProduct } from "@/store/slices/productsSlice";
 import { fetchCategories } from "@/store/slices/categoriesSlice";
+import { fetchSubMainCategories } from "@/store/slices/subCategoriesSlice";
 import DeleteConfirmModal from "./DeleteConfirmModal";
 import SuccessModal from "@/components/modals/SuccessModal";
 import AdvancedSearchFilter from "./AdvancedSearchFilter";
@@ -19,6 +25,9 @@ export default function ProductsList() {
   const dispatch = useDispatch();
   const { products, loading, total } = useSelector((state) => state.products);
   const { categories } = useSelector((state) => state.categories);
+  const { subMainCategories, subCategories } = useSelector(
+    (state) => state.subCategories
+  );
   const [currentPage, setCurrentPage] = useState(1);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedProductForDelete, setSelectedProductForDelete] =
@@ -28,6 +37,8 @@ export default function ProductsList() {
   const [filters, setFilters] = useState({
     search: "",
     category: "",
+    subMainCategory: "",
+    subCategory: "",
     minPrice: "",
     maxPrice: "",
     stockStatus: "",
@@ -35,11 +46,12 @@ export default function ProductsList() {
     endDate: "",
   });
 
-  // Fetch categories on mount
+  // Fetch categories and subcategories on mount
   useEffect(() => {
     if (categories.length === 0) {
       dispatch(fetchCategories());
     }
+    dispatch(fetchSubMainCategories());
   }, [dispatch, categories.length]);
 
   // Fetch products with filters and pagination
@@ -102,6 +114,10 @@ export default function ProductsList() {
           <AdvancedSearchFilter
             onFilterChange={setFilters}
             categories={categories}
+            subMainCategories={subMainCategories}
+            subCategories={subCategories}
+            selectedCategory={filters.category}
+            selectedSubMainCategory={filters.subMainCategory}
           />
 
           {/* Products Table */}
@@ -116,14 +132,19 @@ export default function ProductsList() {
                 {/* Pagination Info */}
                 <div className="text-sm text-gray-600">
                   {total > 0
-                    ? `${(currentPage - 1) * ITEMS_PER_PAGE + 1}-${Math.min(currentPage * ITEMS_PER_PAGE, total)} of ${total}`
+                    ? `${(currentPage - 1) * ITEMS_PER_PAGE + 1}-${Math.min(
+                        currentPage * ITEMS_PER_PAGE,
+                        total
+                      )} of ${total}`
                     : "No products"}
                 </div>
 
                 {/* Pagination Controls */}
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.max(prev - 1, 1))
+                    }
                     disabled={currentPage === 1}
                     className="p-1 text-gray-600 hover:bg-gray-100 rounded disabled:opacity-50 disabled:cursor-not-allowed"
                   >
@@ -170,12 +191,15 @@ export default function ProductsList() {
                     Category
                   </th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
+                    Sub Main Category
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
                     Regular Price
                   </th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
                     Sale Price
                   </th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
+                  <th className="px-8 py-4 text-left text-sm font-semibold text-gray-900">
                     Stock
                   </th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
@@ -190,7 +214,7 @@ export default function ProductsList() {
                 {!Array.isArray(products) || products.length === 0 ? (
                   <tr>
                     <td
-                      colSpan="9"
+                      colSpan="10"
                       className="px-6 py-4 text-center text-gray-600"
                     >
                       No products found
@@ -227,6 +251,11 @@ export default function ProductsList() {
                       <td className="px-6 py-4">
                         <p className="text-sm text-gray-600">
                           {product.category_name || "—"}
+                        </p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <p className="text-sm text-gray-600">
+                          {product.sub_main_category_name || "—"}
                         </p>
                       </td>
                       <td className="px-6 py-4">

@@ -17,7 +17,8 @@ export default function ProductsTable({ products }) {
   const [sortBy, setSortBy] = useState("date");
   const [currentPage, setCurrentPage] = useState(1);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [selectedProductForDelete, setSelectedProductForDelete] = useState(null);
+  const [selectedProductForDelete, setSelectedProductForDelete] =
+    useState(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [deletedProductName, setDeletedProductName] = useState("");
   const itemsPerPage = 10;
@@ -27,7 +28,9 @@ export default function ProductsTable({ products }) {
       formData: {
         title: product.name,
         description: product.description || "",
-        regularPrice: product.originalPrice ? product.originalPrice.replace(/₹|,/g, "") : "",
+        regularPrice: product.originalPrice
+          ? product.originalPrice.replace(/₹|,/g, "")
+          : "",
         salePrice: product.price ? product.price.replace(/₹|,/g, "") : "",
         sku: product.sku,
         category: product.category,
@@ -99,8 +102,10 @@ export default function ProductsTable({ products }) {
       if (sortBy === "name") {
         return a.name.localeCompare(b.name);
       } else if (sortBy === "price") {
-        return parseFloat(a.price.replace(/₹|,/g, "")) -
-               parseFloat(b.price.replace(/₹|,/g, ""));
+        return (
+          parseFloat(a.price.replace(/₹|,/g, "")) -
+          parseFloat(b.price.replace(/₹|,/g, ""))
+        );
       } else if (sortBy === "stock") {
         return a.stock - b.stock;
       } else {
@@ -214,8 +219,11 @@ export default function ProductsTable({ products }) {
       {/* Results Info */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-gray-600">
-          Showing {paginatedProducts.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0} to{" "}
-          {Math.min(currentPage * itemsPerPage, filteredProducts.length)} of{" "}
+          Showing{" "}
+          {paginatedProducts.length > 0
+            ? (currentPage - 1) * itemsPerPage + 1
+            : 0}{" "}
+          to {Math.min(currentPage * itemsPerPage, filteredProducts.length)} of{" "}
           {filteredProducts.length} items
         </p>
         <div className="flex items-center gap-2">
@@ -232,14 +240,19 @@ export default function ProductsTable({ products }) {
             max={totalPages}
             value={currentPage}
             onChange={(e) => {
-              const page = Math.min(Math.max(1, parseInt(e.target.value)), totalPages);
+              const page = Math.min(
+                Math.max(1, parseInt(e.target.value)),
+                totalPages
+              );
               setCurrentPage(page);
             }}
             className="w-12 px-2 py-1 border border-gray-300 rounded text-center text-sm text-black"
           />
           <span className="text-sm text-gray-600">of {totalPages}</span>
           <button
-            onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+            onClick={() =>
+              setCurrentPage(Math.min(totalPages, currentPage + 1))
+            }
             disabled={currentPage === totalPages}
             className="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 text-black"
           >
@@ -281,7 +294,10 @@ export default function ProductsTable({ products }) {
           </thead>
           <tbody className="divide-y divide-gray-200">
             {paginatedProducts.map((product) => (
-              <tr key={product.id} className="hover:bg-gray-50 transition-colors">
+              <tr
+                key={product.id}
+                className="hover:bg-gray-50 transition-colors"
+              >
                 <td className="px-6 py-4">
                   <input type="checkbox" className="rounded" />
                 </td>
@@ -294,7 +310,7 @@ export default function ProductsTable({ products }) {
                   <p className="text-sm text-gray-600">{product.sku}</p>
                 </td>
                 <td className="px-6 py-4">
-                  <span className="inline-block px-2 py-1 bg-green-100 text-green-700 text-sm font-medium rounded">
+                  <span className="inline-block  px-4 py-1 bg-green-100 text-green-700 text-sm font-medium rounded">
                     In stock ({product.stock})
                   </span>
                 </td>
@@ -309,7 +325,9 @@ export default function ProductsTable({ products }) {
                   </div>
                 </td>
                 <td className="px-6 py-4">
-                  <p className="text-sm text-gray-600">{product.category_name || "—"}</p>
+                  <p className="text-sm text-gray-600">
+                    {product.category_name || "—"}
+                  </p>
                 </td>
                 <td className="px-6 py-4">
                   <p className="text-sm text-gray-600">{product.date}</p>

@@ -1,21 +1,44 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useDispatch } from "react-redux";
 import { MdClose, MdFilterList } from "react-icons/md";
 import CustomDropdown from "../common/CustomDropdown";
+import { fetchSubMainCategoriesByCategory, fetchSubCategoriesBySubMainCategory } from "@/store/slices/subCategoriesSlice";
 
 export default function AdvancedSearchFilter({
   onFilterChange,
   categories = [],
+  subMainCategories = [],
+  subCategories = [],
+  selectedCategory = "",
+  selectedSubMainCategory = "",
 }) {
+  const dispatch = useDispatch();
   const [isOpen, setIsOpen] = useState(false);
   const [filters, setFilters] = useState({
     search: "",
     category: "",
+    subMainCategory: "",
+    subCategory: "",
     minPrice: "",
     maxPrice: "",
     stockStatus: "",
   });
+
+  // Fetch sub-main categories when category is selected
+  useEffect(() => {
+    if (filters.category) {
+      dispatch(fetchSubMainCategoriesByCategory(filters.category));
+    }
+  }, [filters.category, dispatch]);
+
+  // Fetch sub-categories when sub-main category is selected
+  useEffect(() => {
+    if (filters.subMainCategory) {
+      dispatch(fetchSubCategoriesBySubMainCategory(filters.subMainCategory));
+    }
+  }, [filters.subMainCategory, dispatch]);
 
   const handleFilterChange = (name, value) => {
     setFilters((prev) => ({
@@ -33,6 +56,8 @@ export default function AdvancedSearchFilter({
     const emptyFilters = {
       search: "",
       category: "",
+      subMainCategory: "",
+      subCategory: "",
       minPrice: "",
       maxPrice: "",
       stockStatus: "",
@@ -100,9 +125,40 @@ export default function AdvancedSearchFilter({
                 label="Category"
                 options={[{ id: "", name: "All Categories" }, ...categories]}
                 value={filters.category}
-                onChange={(value) => handleFilterChange("category", value)}
+                onChange={(value) => {
+                  handleFilterChange("category", value);
+                  // Reset sub-categories when category changes
+                  handleFilterChange("subMainCategory", "");
+                  handleFilterChange("subCategory", "");
+                }}
                 placeholder="Select Category"
               />
+
+              {/* Sub Main Category */}
+              {filters.category && (
+                <CustomDropdown
+                  label="Sub Main Category"
+                  options={[{ id: "", name: "All Sub Main Categories" }, ...subMainCategories.map(sub => ({ id: sub.id, name: sub.name }))]}
+                  value={filters.subMainCategory}
+                  onChange={(value) => {
+                    handleFilterChange("subMainCategory", value);
+                    // Reset sub-categories when sub-main category changes
+                    handleFilterChange("subCategory", "");
+                  }}
+                  placeholder="Select Sub Main Category"
+                />
+              )}
+
+              {/* Sub Category */}
+              {filters.subMainCategory && (
+                <CustomDropdown
+                  label="Sub Category"
+                  options={[{ id: "", name: "All Sub Categories" }, ...subCategories.map(sub => ({ id: sub.id, name: sub.name }))]}
+                  value={filters.subCategory}
+                  onChange={(value) => handleFilterChange("subCategory", value)}
+                  placeholder="Select Sub Category"
+                />
+              )}
 
               {/* Price Range */}
               <div className="grid grid-cols-2 gap-4">
