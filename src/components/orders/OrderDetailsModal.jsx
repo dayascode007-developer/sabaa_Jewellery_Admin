@@ -221,6 +221,19 @@ export default function OrderDetailsModal({ order, onClose }) {
                       </div>
                     </div>
                   )}
+
+                  {/* Gift Packaging */}
+                  {order.item.gift_wrap && (
+                    <div className="mt-4 pt-4 border-t border-slate-200">
+                      <div className="flex items-center gap-3 rounded-lg p-3 bg-amber-50 border border-amber-200">
+                        <span className="text-2xl">🎁</span>
+                        <div>
+                          <p className="text-xs text-amber-800 font-semibold uppercase">Gift Packaging</p>
+                          <p className="text-sm text-amber-700">Complimentary gift wrapping included</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             ) : (
