@@ -355,6 +355,7 @@ export default function OrdersList() {
               { key: "confirmed", label: "Confirmed" },
               { key: "processing", label: "Processing" },
               { key: "shipped", label: "Shipped" },
+              { key: "delayed", label: "Delivery Delayed" },
               { key: "out_for_delivery", label: "Out for Delivery" },
               { key: "delivered", label: "Delivered" },
               { key: "cancelled", label: "Cancelled" },
