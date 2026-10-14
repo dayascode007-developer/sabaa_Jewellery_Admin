@@ -130,6 +130,11 @@ const adminAuthSlice = createSlice({
         // Store in localStorage
         localStorage.setItem("adminToken", action.payload.token);
         localStorage.setItem("adminData", JSON.stringify(action.payload.admin));
+
+        // Store in cookies (for middleware)
+        if (typeof window !== "undefined") {
+          document.cookie = `adminToken=${action.payload.token}; path=/; max-age=604800; SameSite=Strict`;
+        }
       })
       .addCase(loginAdmin.rejected, (state, action) => {
         state.isLoading = false;
@@ -152,6 +157,11 @@ const adminAuthSlice = createSlice({
         // Clear localStorage
         localStorage.removeItem("adminToken");
         localStorage.removeItem("adminData");
+
+        // Clear cookies
+        if (typeof window !== "undefined") {
+          document.cookie = "adminToken=; path=/; max-age=0; SameSite=Strict";
+        }
       })
       .addCase(logoutAdmin.rejected, (state, action) => {
         state.isLoading = false;
