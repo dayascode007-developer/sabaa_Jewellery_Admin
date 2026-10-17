@@ -752,7 +752,7 @@ export default function AddProductForm({ productId = null }) {
               : "Create a new product with images and details"}
           </p>
         </div>
-        {/* {!isEditMode && (
+        {!isEditMode && (
           <button
             type="button"
             onClick={() => setShowBulkUploadModal(true)}
@@ -762,7 +762,7 @@ export default function AddProductForm({ productId = null }) {
             <PiMicrosoftExcelLogoThin size={20} />
             Bulk Upload
           </button>
-        )} */}
+        )}
       </div>
 
       {/* Tabs */}
