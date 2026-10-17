@@ -19,6 +19,7 @@ export default function BlogList() {
   }, [dispatch]);
 
   const handleReadMore = (blogId) => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
     router.push(`/blog/${blogId}`);
   };
 

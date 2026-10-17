@@ -145,18 +145,6 @@ export default function AddBlogForm({ initialBlog = null }) {
     }
     if (contentSections.length === 0) {
       errors.content = "At least one content section is required";
-    } else {
-      for (let section of contentSections) {
-        if (!section.heading.trim()) {
-          errors.content = "All sections must have a heading";
-          break;
-        }
-        const plainText = section.text.replace(/<[^>]*>/g, "").trim();
-        if (!plainText) {
-          errors.content = "All sections must have content text";
-          break;
-        }
-      }
     }
 
     if (Object.keys(errors).length > 0) {
@@ -391,7 +379,7 @@ export default function AddBlogForm({ initialBlog = null }) {
               {/* Section Heading */}
               <div>
                 <label className="block text-sm font-medium text-gray-900 mb-2">
-                  Section Heading <span className="text-red-500">*</span>
+                  Section Heading
                 </label>
                 <input
                   type="text"
@@ -408,7 +396,7 @@ export default function AddBlogForm({ initialBlog = null }) {
               {/* Section Text */}
               <div>
                 <label className="block text-sm font-medium text-gray-900 mb-2">
-                  Content Text <span className="text-red-500">*</span>
+                  Content Text
                 </label>
                 <Editor
                   value={section.text}

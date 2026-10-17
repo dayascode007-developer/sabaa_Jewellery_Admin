@@ -68,26 +68,6 @@ export default function RealtimeAnalytics() {
           <p className="text-sm text-gray-600 mt-1">Real-time analytics updates</p>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-xs text-gray-500">
-            Last updated: {formatTime(lastUpdated)}
-          </span>
-          <button
-            onClick={() => setAutoRefresh(!autoRefresh)}
-            className={`px-3 py-2 rounded text-sm font-medium transition-colors flex items-center gap-2 ${
-              autoRefresh
-                ? "bg-green-100 text-green-700 hover:bg-green-200"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-            }`}
-          >
-            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-              {autoRefresh ? (
-                <circle cx="10" cy="10" r="8" />
-              ) : (
-                <circle cx="10" cy="10" r="8" opacity="0.5" />
-              )}
-            </svg>
-            {autoRefresh ? "Live" : "Paused"}
-          </button>
           <a
             href="https://analytics.google.com/analytics/web/#/a410348721p556935475/reports/intelligenthome"
             target="_blank"
